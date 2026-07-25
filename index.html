@@ -455,6 +455,7 @@
       <div class="action-row no-print" id="actionRow" style="display:none;">
         <button class="btn btn-gold" id="copyBtn" type="button">Copy for WhatsApp</button>
         <button class="btn btn-outline" id="pdfBtn" type="button">Download PDF</button>
+        <button class="btn btn-outline" id="shareBtn" type="button">📤 Share PDF</button>
       </div>
       <p class="status" id="statusMsg" role="status" aria-live="polite"></p>
     </div>
@@ -1157,6 +1158,17 @@ function buildQuotePdf(doc, q){
   doc.text("Toll Free: 1800 233 9008", pageW / 2, y, { align: "center" });
 }
 
+/* ================================================================
+   PDF DOWNLOAD — desktop browsers vs. the Android APK build
+   Desktop Chrome/Edge/Firefox: jsPDF's own doc.save() works fine and
+   is left untouched below.
+   Android APK (WebView): the app registers a JS interface named
+   AndroidDownloader with a saveBase64File(fileName, base64Data,
+   mimeType) method (see AndroidDownloadBridge.kt) that writes the PDF
+   straight into Downloads/ via MediaStore. When that object is
+   present we hand the PDF to it as base64 instead of calling
+   doc.save(), which a bare WebView has no download manager for.
+   ================================================================ */
 function downloadPDF(){
   if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
   if(!window.jspdf || !window.jspdf.jsPDF){
@@ -1171,12 +1183,97 @@ function downloadPDF(){
 
   window.setTimeout(() => {
     try{
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
-      buildQuotePdf(doc, lastQuote);
-      const fname = "RannUtsav_Quote_" + (lastQuote.name || "Guest").trim().replace(/\s+/g, "_") + ".pdf";
-      doc.save(fname);
-      setStatus("PDF downloaded.", "ok");
+      const { doc, fname } = createQuotePdfDoc();
+      saveQuotePdf(doc, fname);
+    } catch(err){
+      setStatus("Could not generate the PDF — please try again.", "warn");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }, 30);
+}
+
+/* Builds the jsPDF document for the current quotation — the single
+   place that calls buildQuotePdf(), reused by both Download and
+   Share so the PDF generation logic itself is never duplicated. */
+function createQuotePdfDoc(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+  buildQuotePdf(doc, lastQuote);
+  const fname = "RannUtsav_Quote_" + (lastQuote.name || "Guest").trim().replace(/\s+/g, "_") + ".pdf";
+  return { doc, fname };
+}
+
+/* Saves an already-built PDF doc — the same Android-bridge / desktop
+   doc.save() logic Download PDF has always used, factored out so
+   Share PDF's fallback path can call it too instead of repeating it. */
+function saveQuotePdf(doc, fname){
+  if(window.AndroidDownloader && typeof window.AndroidDownloader.saveBase64File === "function"){
+    // Running inside the Android APK's WebView with the native
+    // bridge registered — hand it the raw base64 payload.
+    const base64 = doc.output("datauristring").split(",")[1];
+    window.AndroidDownloader.saveBase64File(fname, base64, "application/pdf");
+    setStatus("PDF saved.", "ok");
+  } else {
+    // Desktop browser (or a WebView without the bridge) — unchanged.
+    doc.save(fname);
+    setStatus("PDF downloaded.", "ok");
+  }
+}
+
+/* ================================================================
+   SHARE PDF — same PDF (via createQuotePdfDoc(), no duplicated
+   generation logic), handed to the Web Share API with a file
+   attached when the browser supports it, so the person can pick
+   WhatsApp, Gmail, Telegram, Drive, Bluetooth, Nearby Share, or any
+   other installed app from the native share sheet. Falls back to the
+   exact same save path as Download PDF when navigator.share() (or
+   file sharing specifically) isn't available.
+   ================================================================ */
+function sharePDF(){
+  if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    setStatus("The PDF library could not be loaded — check your internet connection and try again.", "warn");
+    return;
+  }
+  const btn = $("shareBtn");
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Preparing PDF…";
+  setStatus("Preparing your PDF…", "ok");
+
+  window.setTimeout(async () => {
+    try{
+      const { doc, fname } = createQuotePdfDoc();
+      const blob = doc.output("blob");
+      const file = new File([blob], fname, { type: "application/pdf" });
+
+      const canShareFiles =
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] });
+
+      if(canShareFiles){
+        try{
+          await navigator.share({
+            files: [file],
+            title: "Rann Utsav Tent City — Quotation",
+            text: "Rann Utsav Tent City quotation"
+          });
+          setStatus("Quotation shared.", "ok");
+        } catch(shareErr){
+          // AbortError just means the person closed the share sheet
+          // themselves — not a failure, so don't fall back for that.
+          if(shareErr && shareErr.name !== "AbortError"){
+            saveQuotePdf(doc, fname);
+          }
+        }
+      } else {
+        // Web Share API (with files) isn't available here — fall back
+        // to the exact same save path Download PDF uses.
+        saveQuotePdf(doc, fname);
+      }
     } catch(err){
       setStatus("Could not generate the PDF — please try again.", "warn");
     } finally {
@@ -1193,6 +1290,7 @@ function init(){
   $("addLineBtn").addEventListener("click", () => { addLine(); maybeLiveUpdate(); });
   $("copyBtn").addEventListener("click", copyForWhatsApp);
   $("pdfBtn").addEventListener("click", downloadPDF);
+  $("shareBtn").addEventListener("click", sharePDF);
 
   $("quoteForm").addEventListener("submit", (e) => {
     e.preventDefault();
