@@ -832,7 +832,7 @@ function addLine(category){
   // affect pricing, but still need a listener so live-refresh (see
   // maybeLiveUpdate) picks up the change immediately instead of waiting
   // for the next unrelated field to fire an event.
-  div.querySelector(".line-category").addEventListener("change", () => onLineChange(idx));
+  div.querySelector(".line-category").addEventListener("change", () => { syncAdultOptionsForLine(idx); onLineChange(idx); });
   div.querySelector(".line-qty").addEventListener("change", () => onLineChange(idx));
   div.querySelector(".line-mattress").addEventListener("input", () => { clampMattressInput(idx); maybeLiveUpdate(); });
   div.querySelector(".line-singleocc").addEventListener("change", maybeLiveUpdate);
@@ -855,19 +855,42 @@ function onLineChange(idx){
   checkLineCapacity(idx);
 }
 
-/* Keeps the Extra Mattress field's max (and its "max N per tent" hint)
-   in sync with the selected category, and clamps any value that's now
-   too high. Called on category change and on every mattress keystroke. */
+// Categories that allow 2 extra mattresses per tent (matched on the
+// exact internal RATES key, not the visible label) — every other
+// category allows only 1 per tent. The line's total mattress ceiling
+// is this per-tent allowance multiplied by its number of tents.
+const SPECIAL_MATTRESS_CATEGORIES = ["Super Premium Tent", "Darbari Suite", "Rajwadi Suite"];
+
+function mattressPerTentAllowance(category){
+  return SPECIAL_MATTRESS_CATEGORIES.includes(category) ? 2 : 1;
+}
+
+// Single source of truth for a line's mattress ceiling — used both to
+// drive the input's min/max/hint text and, independently, to re-clamp
+// the value inside generateQuote() itself so an over-limit quantity
+// can never reach pricing/preview/PDF/WhatsApp even if the input's own
+// clamping were somehow bypassed.
+function getMattressMax(category, qty){
+  const tents = Math.max(parseInt(qty, 10) || 0, 1);
+  return mattressPerTentAllowance(category) * tents;
+}
+
+/* Keeps the Extra Mattress field's max (and its helper text) in sync
+   with the selected category AND the current number of tents, and
+   clamps any value that's now too high. Called on category change, on
+   number-of-tents change, on line creation, and on every mattress
+   keystroke. */
 function clampMattressInput(idx){
   const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
   if(!line) return;
   const category = line.querySelector(".line-category").value;
-  const rate = RATES[category];
+  const qty = line.querySelector(".line-qty").value;
+  const max = getMattressMax(category, qty);
   const mattressInput = line.querySelector(".line-mattress");
   const mattressTag = line.querySelector(".mattress-max-tag");
-  mattressInput.max = rate.maxMattress;
-  mattressTag.textContent = `— max ${rate.maxMattress} per tent`;
-  if(parseInt(mattressInput.value || 0, 10) > rate.maxMattress) mattressInput.value = rate.maxMattress;
+  mattressInput.max = max;
+  mattressTag.textContent = `Maximum ${max} mattress${max === 1 ? "" : "es"} for this category`;
+  if(parseInt(mattressInput.value || 0, 10) > max) mattressInput.value = max;
 }
 
 /* Rebuilds the Tent 1 / Tent 2 / ... guest-detail cards for a line to
@@ -888,32 +911,51 @@ function renderTentInstances(idx, qty){
     return;
   }
 
+  // Adults range depends on the category currently selected for this
+  // line — Darbari Suite allows up to 4, every other category up to 2.
+  const category = line.querySelector(".line-category").value;
+  const adultMax = getAdultMax(category);
+
   // Growing (or first render): append whatever cards are missing.
   for(let n = existing.length + 1; n <= qty; n++){
     const block = document.createElement("div");
     block.className = "tent-instance";
     block.innerHTML = `
       <div class="ti-title">Tent ${n}</div>
-      <div class="row3">
-        <div class="field">
-          <label for="tiAdults-${idx}-${n}">Adults (6–60+)</label>
-          <select id="tiAdults-${idx}-${n}" class="ti-adults" aria-label="Tent ${n} adults, ages 6 and up">${numberOptionsRange(1,4,2)}</select>
-        </div>
-        <div class="field">
-          <label for="tiChild6-${idx}-${n}">Children (6+)</label>
-          <select id="tiChild6-${idx}-${n}" class="ti-child6" aria-label="Tent ${n} children aged 6 and up">${numberOptions(6,0)}</select>
-        </div>
-        <div class="field">
-          <label for="tiChildFree-${idx}-${n}">Children (below 6)</label>
-          <select id="tiChildFree-${idx}-${n}" class="ti-childfree" aria-label="Tent ${n} children below 6">${numberOptions(6,0)}</select>
-        </div>
+      <div class="field">
+        <label for="tiAdults-${idx}-${n}">Adults (6–60+)</label>
+        <select id="tiAdults-${idx}-${n}" class="ti-adults" aria-label="Tent ${n} adults, ages 6 and up">${numberOptionsRange(1,adultMax,2)}</select>
       </div>
     `;
     holder.appendChild(block);
     block.querySelector(".ti-adults").addEventListener("change", () => { checkLineCapacity(idx); maybeLiveUpdate(); });
-    block.querySelector(".ti-child6").addEventListener("change", () => { checkLineCapacity(idx); maybeLiveUpdate(); });
-    block.querySelector(".ti-childfree").addEventListener("change", () => { checkLineCapacity(idx); maybeLiveUpdate(); });
   }
+}
+
+// Adult-count ceiling per category: only Darbari Suite (matched on the
+// exact internal RATES key, not the display label) allows up to 4
+// adults in a single tent; every other category is capped at 2 — but
+// 1 remains selectable everywhere so Single Occupancy keeps working.
+function getAdultMax(category){
+  return category === "Darbari Suite" ? 4 : 2;
+}
+
+/* Called whenever a line's tent category changes. Rebuilds the Adults
+   dropdown options for every tent card already in that line to match
+   the new category's allowed range. If the currently selected value is
+   no longer valid for the new category (e.g. 3 or 4 adults under
+   Darbari, switched to any other category), it resets to 2 — otherwise
+   the existing value (1 or 2) is kept as-is. */
+function syncAdultOptionsForLine(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  if(!line) return;
+  const category = line.querySelector(".line-category").value;
+  const adultMax = getAdultMax(category);
+  qsa(".ti-adults", line).forEach(sel => {
+    const current = parseInt(sel.value || 2, 10);
+    const next = (current > adultMax || current < 1) ? 2 : current;
+    sel.innerHTML = numberOptionsRange(1, adultMax, next);
+  });
 }
 
 function removeLine(idx){
@@ -938,8 +980,7 @@ function checkLineCapacity(idx){
   let overBase = false, overMax = false;
   tents.forEach(t=>{
     const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
-    const c = parseInt(t.querySelector(".ti-child6").value || 0, 10);
-    const total = a + c;
+    const total = a;
     if(total > base && total <= maxWithMattress) overBase = true;
     if(total > maxWithMattress) overMax = true;
   });
@@ -1075,7 +1116,7 @@ function generateQuote(opts){
   const lineEls = qsa(".tent-line");
   if(lineEls.length === 0){ return fail("Please add at least one tent category."); }
 
-  let totalTentRate = 0, totalAdditional = 0, totalGuestsBillable = 0, totalChildFree = 0;
+  let totalTentRate = 0, totalAdditional = 0, totalGuestsBillable = 0;
   const categoryLines = [];
 
   for(const line of lineEls){
@@ -1084,16 +1125,16 @@ function generateQuote(opts){
     if(qty <= 0){ return fail("Please select the number of tents for each category."); }
     const rate = RATES[category];
     const singleOcc = line.querySelector(".line-singleocc").value === "yes";
-    const mattressQty = parseInt(line.querySelector(".line-mattress").value || 0, 10);
+    const mattressMax = getMattressMax(category, qty);
+    let mattressQty = parseInt(line.querySelector(".line-mattress").value || 0, 10);
+    if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
+    if(mattressQty > mattressMax) mattressQty = mattressMax;
 
     const tentEls = line.querySelectorAll(".tent-instance");
-    let lineGuests = 0, lineChildFree = 0;
+    let lineGuests = 0;
     tentEls.forEach(t=>{
       const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
-      const c6 = parseInt(t.querySelector(".ti-child6").value || 0, 10);
-      const cf = parseInt(t.querySelector(".ti-childfree").value || 0, 10);
-      lineGuests += (a + c6);
-      lineChildFree += cf;
+      lineGuests += a;
     });
     if(lineGuests <= 0){ return fail(`Please enter guest counts for ${category}.`); }
 
@@ -1124,10 +1165,10 @@ function generateQuote(opts){
     totalTentRate += lineTentRate;
     totalAdditional += lineAdditional;
     totalGuestsBillable += lineGuests;
-    totalChildFree += lineChildFree;
 
-    // `guests` (adults + children 6+) is what pricing is based on and
-    // must not change. `displayGuests` adds the extra mattress count on
+    // `guests` (adults — the only per-tent headcount now that Children
+    // fields have been removed) is what pricing is based on and must
+    // not change. `displayGuests` adds the extra mattress count on
     // top purely for what's shown to the guest — mattresses add people
     // to the tent even though they're priced as a flat add-on, not a
     // per-person rate.
@@ -1154,7 +1195,7 @@ function generateQuote(opts){
   lastQuote = {
     name, checkin, nights,
     checkout: checkoutDate.toISOString().slice(0,10),
-    guests: totalGuestsBillable, childFree: totalChildFree,
+    guests: totalGuestsBillable,
     tentRate: totalTentRate, additional: totalAdditional, gst, net,
     categoryLines,
     includeItinerary // snapshot of the state at generation time
