@@ -578,16 +578,23 @@ const SEASON_START = "2026-11-01";
 const SEASON_END   = "2027-03-07";
 
 const CHRISTMAS = [["2026-12-18","2027-01-02"]];
+// Dates that get TIER 2 rates besides the Christmas window. January
+// Full Moon (20-23 Jan 2027) uses the existing Tier 2 rates — not a
+// new/duplicated rate, just the same ADDITIONAL.tier2 values applied
+// via this extra date range.
+const TIER2_SPECIFIC = [
+  ["2027-01-20","2027-01-23"], // January Full Moon — Tier 2 rates apply
+];
 const TIER1_SPECIFIC = [
   ["2026-11-08","2026-11-14"],
   ["2026-11-22","2026-11-25"],
   ["2026-11-09","2026-11-09"],
+  ["2027-01-07","2027-01-07"], // January Dark Moon — was already peak under the old blanket Jan range; preserved so the Full Moon fix doesn't silently un-flag it
   ["2027-02-18","2027-02-21"],
   ["2027-02-06","2027-02-06"],
 ];
 const TIER1_SEASON = [
   ["2026-12-01","2026-12-17"],
-  ["2027-01-03","2027-01-31"],
 ];
 
 /* ================================================================
@@ -711,16 +718,38 @@ let includeItinerary = false;
    night (with a non-peak check-in) does not qualify. `nights` is no
    longer used here; kept as a parameter for call-site compatibility.
    ================================================================ */
-function inRange(d, ranges){
-  const t = new Date(d).getTime();
-  return ranges.some(([s,e]) => t >= new Date(s).getTime() && t <= new Date(e).getTime());
+/* Parses a "YYYY-MM-DD" HTML date-input value as a local date (year,
+   month, day components) rather than letting the JS Date constructor
+   treat it as UTC — avoids the string-parsing timezone shift where
+   new Date("2027-01-20") can render as 19 Jan in negative-UTC-offset
+   timezones. */
+function parseLocalDate(dateString){
+  if(!dateString) return null;
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/* Strips any time component down to local midnight, so two dates
+   built the same way always compare cleanly. */
+function normalizeDate(date){
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function inRange(dateStr, ranges){
+  const d = parseLocalDate(dateStr);
+  if(!d) return false;
+  const t = normalizeDate(d).getTime();
+  return ranges.some(([s,e]) => {
+    const start = normalizeDate(parseLocalDate(s)).getTime();
+    const end = normalizeDate(parseLocalDate(e)).getTime();
+    return t >= start && t <= end; // inclusive of both the start and end date
+  });
 }
 
 function detectPeakTier(checkinStr, nights){
   if(!checkinStr) return "none";
-  const iso = new Date(checkinStr).toISOString().slice(0,10);
-  if(inRange(iso, CHRISTMAS)) return "tier2";
-  if(inRange(iso, TIER1_SPECIFIC) || inRange(iso, TIER1_SEASON)) return "tier1";
+  if(inRange(checkinStr, CHRISTMAS) || inRange(checkinStr, TIER2_SPECIFIC)) return "tier2";
+  if(inRange(checkinStr, TIER1_SPECIFIC) || inRange(checkinStr, TIER1_SEASON)) return "tier1";
   return "none";
 }
 
@@ -834,10 +863,10 @@ function addLine(category){
   // affect pricing, but still need a listener so live-refresh (see
   // maybeLiveUpdate) picks up the change immediately instead of waiting
   // for the next unrelated field to fire an event.
-  div.querySelector(".line-category").addEventListener("change", () => { syncAdultOptionsForLine(idx); onLineChange(idx); });
+  div.querySelector(".line-category").addEventListener("change", () => { syncAdultsForLine(idx); onLineChange(idx); });
   div.querySelector(".line-qty").addEventListener("change", () => onLineChange(idx));
   div.querySelector(".line-mattress").addEventListener("input", () => { clampMattressInput(idx); maybeLiveUpdate(); });
-  div.querySelector(".line-singleocc").addEventListener("change", maybeLiveUpdate);
+  div.querySelector(".line-singleocc").addEventListener("change", () => { syncAdultsForLine(idx); checkLineCapacity(idx); maybeLiveUpdate(); });
   div.querySelector(`[data-remove-idx="${idx}"]`).addEventListener("click", () => { removeLine(idx); maybeLiveUpdate(); });
 
   // Initialize mattress max/tag and capacity messaging for the new line
@@ -915,6 +944,10 @@ function renderTentInstances(idx, qty){
 
   // Adults range depends on the category currently selected for this
   // line — Darbari Suite allows up to 4, every other category up to 2.
+  // syncAdultsForLine() (called at the end of this function) finalizes
+  // the actual options/value/disabled state per the current category
+  // AND single-occupancy setting — this initial render just needs
+  // *a* valid select to exist.
   const category = line.querySelector(".line-category").value;
   const adultMax = getAdultMax(category);
 
@@ -927,36 +960,73 @@ function renderTentInstances(idx, qty){
       <div class="field">
         <label for="tiAdults-${idx}-${n}">Adults (6–60+)</label>
         <select id="tiAdults-${idx}-${n}" class="ti-adults" aria-label="Tent ${n} adults, ages 6 and up">${numberOptionsRange(1,adultMax,2)}</select>
+        <span class="ti-singleocc-hint label-hint" style="display:none;">Automatically set to 1 for single occupancy</span>
       </div>
     `;
     holder.appendChild(block);
     block.querySelector(".ti-adults").addEventListener("change", () => { checkLineCapacity(idx); maybeLiveUpdate(); });
   }
+
+  // Newly-added cards must immediately reflect the line's current
+  // Single Occupancy state (1 adult + disabled) or normal state
+  // (2, or 2/3/4 for Darbari) rather than a generic default.
+  syncAdultsForLine(idx);
 }
 
 // Adult-count ceiling per category: only Darbari Suite (matched on the
 // exact internal RATES key, not the display label) allows up to 4
-// adults in a single tent; every other category is capped at 2 — but
-// 1 remains selectable everywhere so Single Occupancy keeps working.
+// adults in a single tent; every other category is capped at 2. This
+// is used only to size the *initial* placeholder select in
+// renderTentInstances before syncAdultsForLine() finalizes it — see
+// getNormalAdultRange() for the actual normal-occupancy option range.
 function getAdultMax(category){
   return category === "Darbari Suite" ? 4 : 2;
 }
 
-/* Called whenever a line's tent category changes. Rebuilds the Adults
-   dropdown options for every tent card already in that line to match
-   the new category's allowed range. If the currently selected value is
-   no longer valid for the new category (e.g. 3 or 4 adults under
-   Darbari, switched to any other category), it resets to 2 — otherwise
-   the existing value (1 or 2) is kept as-is. */
-function syncAdultOptionsForLine(idx){
+// Normal (non-single-occupancy) adult range for a category. 1 is
+// deliberately excluded here — a lone adult is only ever reached via
+// the Single Occupancy toggle, never as a manually selectable "normal"
+// option, so it can't drift out of sync with the pricing rule.
+function getNormalAdultRange(category){
+  return category === "Darbari Suite" ? { min: 2, max: 4 } : { min: 2, max: 2 };
+}
+
+/* Single place that keeps every tent card's Adults field in sync with
+   both the line's category AND its Single Occupancy setting. Called
+   whenever either changes, whenever the tent count changes (new cards
+   need the same treatment as existing ones), and once right after a
+   line is created.
+
+   - Single Occupancy = Yes: every card is forced to exactly 1 adult,
+     the dropdown is disabled (not hidden — the guest count must stay
+     visible), and its "auto-set" hint is shown.
+   - Single Occupancy = No: every card is re-enabled, its hint hidden,
+     and its options rebuilt for the category's normal range (2 only,
+     or 2/3/4 for Darbari). A value of 1 (left over from Single
+     Occupancy) — or any value outside the new range — resets to 2,
+     never silently restoring an old 3 or 4. */
+function syncAdultsForLine(idx){
   const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
   if(!line) return;
   const category = line.querySelector(".line-category").value;
-  const adultMax = getAdultMax(category);
-  qsa(".ti-adults", line).forEach(sel => {
-    const current = parseInt(sel.value || 2, 10);
-    const next = (current > adultMax || current < 1) ? 2 : current;
-    sel.innerHTML = numberOptionsRange(1, adultMax, next);
+  const singleOcc = line.querySelector(".line-singleocc").value === "yes";
+
+  qsa(".tent-instance", line).forEach(block => {
+    const sel = block.querySelector(".ti-adults");
+    const hint = block.querySelector(".ti-singleocc-hint");
+    if(singleOcc){
+      sel.innerHTML = numberOptionsRange(1, 1, 1);
+      sel.value = "1";
+      sel.disabled = true;
+      if(hint) hint.style.display = "";
+    } else {
+      const { min, max } = getNormalAdultRange(category);
+      const current = parseInt(sel.value || 0, 10);
+      const next = (current < min || current > max) ? 2 : current;
+      sel.innerHTML = numberOptionsRange(min, max, next);
+      sel.disabled = false;
+      if(hint) hint.style.display = "none";
+    }
   });
 }
 
@@ -1091,6 +1161,52 @@ function renderItineraryPreview(){
 }
 
 /* ================================================================
+   TENT RATE CALCULATION — single shared function
+   Used by generateQuote() only; the preview, PDF, Share PDF, and
+   WhatsApp text all read the resulting categoryLines figures rather
+   than recalculating anything themselves, so there is exactly one
+   place this formula lives.
+
+   SINGLE OCCUPANCY — CORRECTED RULE
+   Official rule: single occupancy = 75% of the DOUBLE-occupancy cost,
+   i.e. finalPerPersonRate * 2 * 0.75 = finalPerPersonRate * 1.5,
+   charged once per tent (never multiplied again by an entered adult
+   count). This replaces the previous (incorrect) "per-person rate x
+   0.75" calculation, which undercharged single-occupancy bookings and
+   also dropped the peak-date surcharge out of the 0.75 factor.
+   The peak-date surcharge is added to the base rate FIRST, before the
+   x1.5 (or the normal x-guests) multiplication is applied — the
+   surcharge itself is never recalculated twice.
+   Darbari/Rajwadi (flat, fixed package rates) are entirely unaffected:
+   they never run the per-person/single-occupancy formula at all.
+   ================================================================ */
+function computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests }){
+  if(rate.flat){
+    // Darbari / Rajwadi Suite: fixed All Days package rate, no
+    // per-person or single-occupancy formula involved.
+    return { tentRateAmount: rate[nights] * qty, tentRateBase: rate[nights] * qty, peakSurcharge: 0 };
+  }
+
+  const baseRate = rate[nights];
+  const peakSurchargePerPerson = (tier === "tier1" || tier === "tier2") ? ADDITIONAL[tier][nights] : 0;
+  const finalPerPersonRate = baseRate + peakSurchargePerPerson;
+
+  if(singleOcc){
+    // Single occupancy is charged once per tent at 1.5x the final
+    // per-person rate (base + peak surcharge already combined) —
+    // not scaled by the entered adult count.
+    const tentRateAmount = finalPerPersonRate * 1.5 * qty;
+    return { tentRateAmount, tentRateBase: tentRateAmount, peakSurcharge: 0 };
+  }
+
+  // Normal (double) occupancy — unchanged from before: base rate and
+  // peak surcharge each scale with the actual number of guests entered.
+  const tentRateBase = baseRate * lineGuests;
+  const peakSurcharge = peakSurchargePerPerson * lineGuests;
+  return { tentRateAmount: tentRateBase + peakSurcharge, tentRateBase, peakSurcharge };
+}
+
+/* ================================================================
    QUOTATION GENERATION (pricing math unchanged)
    ================================================================ */
 function generateQuote(opts){
@@ -1140,29 +1256,19 @@ function generateQuote(opts){
     });
     if(lineGuests <= 0){ return fail(`Please enter guest counts for ${category}.`); }
 
-    let lineTentRate;
-    if(rate.flat){
-      lineTentRate = rate[nights] * qty;
-    } else {
-      let perPerson = rate[nights];
-      if(singleOcc) perPerson = perPerson * 0.75;
-      lineTentRate = perPerson * lineGuests;
-    }
+    // Single shared pricing calculation — used identically by the live
+    // quote, the preview, the PDF, Share PDF, and WhatsApp text, since
+    // all of those simply read the categoryLines figures computed here
+    // once (nothing recalculates the tent rate a second time anywhere).
+    const { tentRateAmount: lineTentRateDisplay, tentRateBase: lineTentRate, peakSurcharge: linePeakSurcharge }
+      = computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
 
-    // Peak surcharge (if any) stays folded into the "Tent Rate" figure —
-    // only the extra-mattress cost is broken out as its own line, per
-    // the requested Tent Rate / Extra Mattress split.
-    let linePeakSurcharge = 0;
-    if(!rate.flat && (tier === "tier1" || tier === "tier2")){
-      linePeakSurcharge += ADDITIONAL[tier][nights] * lineGuests;
-    }
     let lineMattressCost = 0;
     if(mattressQty > 0){
       const mRate = (tier === "tier1" || tier === "tier2") ? rate.mattressPeak : rate.mattress;
-      lineMattressCost = mRate * nights * mattressQty;
+      lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy
     }
     const lineAdditional = linePeakSurcharge + lineMattressCost;
-    const lineTentRateDisplay = lineTentRate + linePeakSurcharge;
 
     totalTentRate += lineTentRate;
     totalAdditional += lineAdditional;
