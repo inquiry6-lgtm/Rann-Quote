@@ -589,12 +589,18 @@ const TIER1_SPECIFIC = [
   ["2026-11-08","2026-11-14"],
   ["2026-11-22","2026-11-25"],
   ["2026-11-09","2026-11-09"],
-  ["2027-01-07","2027-01-07"], // January Dark Moon — was already peak under the old blanket Jan range; preserved so the Full Moon fix doesn't silently un-flag it
   ["2027-02-18","2027-02-21"],
   ["2027-02-06","2027-02-06"],
 ];
+// Every December 2026 / January 2027 date that isn't already covered
+// by CHRISTMAS or TIER2_SPECIFIC above is Tier 1 — there is no
+// "normal/base rate" date in either month. Checked after the Tier 2
+// windows (see detectPeakTier), so 18 Dec-2 Jan and 20-23 Jan are
+// correctly claimed by Tier 2 first and never fall through to here.
 const TIER1_SEASON = [
   ["2026-12-01","2026-12-17"],
+  ["2027-01-03","2027-01-19"],
+  ["2027-01-24","2027-01-31"],
 ];
 
 /* ================================================================
