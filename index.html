@@ -338,6 +338,15 @@
   }
   .itinerary-toggle-row .itlabel .itsub{ font-size:12px; color:var(--ink-soft); }
 
+  .discount-section{
+    padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius-md);
+    background:#fffdf8; margin:6px 0 4px;
+  }
+  .discount-section .discount-heading{
+    margin:0 0 12px; font-family:var(--font-display); font-size:12.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--maroon); font-weight:700;
+  }
+
   /* Accessible Yes/No switch built from a real checkbox input so it's
      keyboard operable and has a proper accessible name via <label>. */
   .switch{ position:relative; display:inline-flex; align-items:center; gap:10px; cursor:pointer; min-height:var(--touch); }
@@ -473,6 +482,31 @@
 
         <hr class="divider">
 
+        <!-- DISCOUNT / TAC -->
+        <div class="discount-section">
+          <p class="discount-heading">Discount / TAC</p>
+          <div class="row2">
+            <div class="field">
+              <label for="adjustmentType">Adjustment Type</label>
+              <select id="adjustmentType" name="adjustmentType">
+                <option value="discount" selected>Discount</option>
+                <option value="tac">TAC</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="adjustmentPercent">Percentage</label>
+              <select id="adjustmentPercent" name="adjustmentPercent">
+                <option value="0" selected>0% — No Discount</option>
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+                <option value="15">15%</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
         <!-- PDF ITINERARY OPTION -->
         <div class="itinerary-toggle-row">
           <div class="itlabel">
@@ -520,6 +554,7 @@
               <div id="rCategoryLines"></div>
             </div>
             <div class="price-table">
+              <div id="rAdjustmentRows"></div>
               <div class="price-row"><span>GST (18%)</span><span class="amt" id="rGST">₹0</span></div>
               <div class="price-row net"><span>Net Payable</span><span class="amt" id="rNet">₹0</span></div>
             </div>
@@ -1240,7 +1275,7 @@ function generateQuote(opts){
   const lineEls = qsa(".tent-line");
   if(lineEls.length === 0){ return fail("Please add at least one tent category."); }
 
-  let totalTentRate = 0, totalAdditional = 0, totalGuestsBillable = 0;
+  let totalGrossTentRate = 0, totalMattressCost = 0, totalGuestsBillable = 0;
   const categoryLines = [];
 
   for(const line of lineEls){
@@ -1266,18 +1301,17 @@ function generateQuote(opts){
     // quote, the preview, the PDF, Share PDF, and WhatsApp text, since
     // all of those simply read the categoryLines figures computed here
     // once (nothing recalculates the tent rate a second time anywhere).
-    const { tentRateAmount: lineTentRateDisplay, tentRateBase: lineTentRate, peakSurcharge: linePeakSurcharge }
-      = computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
+    const { tentRateAmount: lineTentRateDisplay } =
+      computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
 
     let lineMattressCost = 0;
     if(mattressQty > 0){
       const mRate = (tier === "tier1" || tier === "tier2") ? rate.mattressPeak : rate.mattress;
-      lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy
+      lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy OR discount/TAC
     }
-    const lineAdditional = linePeakSurcharge + lineMattressCost;
 
-    totalTentRate += lineTentRate;
-    totalAdditional += lineAdditional;
+    totalGrossTentRate += lineTentRateDisplay;
+    totalMattressCost += lineMattressCost;
     totalGuestsBillable += lineGuests;
 
     // `guests` (adults — the only per-tent headcount now that Children
@@ -1287,7 +1321,9 @@ function generateQuote(opts){
     // to the tent even though they're priced as a flat add-on, not a
     // per-person rate.
     // `tentRateAmount` + `mattressAmount` together equal `amount`
-    // (the total charged for the category) — the split is display-only.
+    // (the total charged for the category, before any quotation-level
+    // Discount/TAC — that's applied once to the combined total below,
+    // never per category) — the split is display-only.
     categoryLines.push({
       category, qty,
       guests: lineGuests,
@@ -1299,7 +1335,16 @@ function generateQuote(opts){
     });
   }
 
-  const subtotal = totalTentRate + totalAdditional;
+  // Discount/TAC — a single quotation-level adjustment applied exactly
+  // once to the combined tent/package rate across every category
+  // (never to extra mattress, never twice, never after GST).
+  const adjustmentType = $("adjustmentType").value === "tac" ? "tac" : "discount";
+  const adjustmentPercent = parseInt($("adjustmentPercent").value || 0, 10) || 0;
+  const grossTentRate = totalGrossTentRate;
+  const adjustmentAmount = grossTentRate * adjustmentPercent / 100;
+  const netTentRate = grossTentRate - adjustmentAmount;
+
+  const subtotal = netTentRate + totalMattressCost; // taxable amount
   const gst = subtotal * 0.18;
   const net = subtotal + gst;
 
@@ -1310,7 +1355,9 @@ function generateQuote(opts){
     name, checkin, nights,
     checkout: checkoutDate.toISOString().slice(0,10),
     guests: totalGuestsBillable,
-    tentRate: totalTentRate, additional: totalAdditional, gst, net,
+    grossTentRate, adjustmentType, adjustmentPercent, adjustmentAmount, netTentRate,
+    mattressTotal: totalMattressCost,
+    taxableAmount: subtotal, gst, net,
     categoryLines,
     includeItinerary // snapshot of the state at generation time
   };
@@ -1356,6 +1403,22 @@ function renderQuoteCard(q){
     return rows;
   }).join('<hr class="divider" style="margin:12px 0;">');
 
+  const adjustHolder = $("rAdjustmentRows");
+  if(q.adjustmentPercent > 0){
+    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
+    let rows =
+      `<div class="price-row"><span>Tent Rate</span><span class="amt">${fmtINR(q.grossTentRate)}</span></div>
+       <div class="price-row"><span>${label} (${q.adjustmentPercent}%)</span><span class="amt">-${fmtINR(q.adjustmentAmount)}</span></div>
+       <div class="price-row"><span>Tent Rate After ${label}</span><span class="amt">${fmtINR(q.netTentRate)}</span></div>`;
+    if(q.mattressTotal > 0){
+      rows += `<div class="price-row"><span>Extra Mattress</span><span class="amt">${fmtINR(q.mattressTotal)}</span></div>`;
+    }
+    rows += `<div class="price-row"><span>Taxable Amount</span><span class="amt">${fmtINR(q.taxableAmount)}</span></div>`;
+    adjustHolder.innerHTML = rows;
+  } else {
+    adjustHolder.innerHTML = "";
+  }
+
   $("rGST").textContent = fmtINR(q.gst);
   $("rNet").textContent = fmtINR(q.net);
 }
@@ -1384,6 +1447,20 @@ function copyForWhatsApp(){
     return lines.join("\n\n");
   }).join("\n\n\n");
 
+  // Discount/TAC block — omitted entirely at 0%, per spec.
+  let adjustmentBlock = "";
+  if(q.adjustmentPercent > 0){
+    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
+    adjustmentBlock =
+`Tent Rate: ${fmtINRPlain(q.grossTentRate)}
+
+${label} (${q.adjustmentPercent}%): -${fmtINRPlain(q.adjustmentAmount)}
+
+Tent Rate After ${label}: ${fmtINRPlain(q.netTentRate)}
+
+`;
+  }
+
   const text =
 `Rann Utsav Tent City
 
@@ -1395,7 +1472,7 @@ Check out Date - ${fmtDate(q.checkout)}
 
 ${catBlocks}
 
-GST 18% - ${fmtINRPlain(q.gst)}
+${adjustmentBlock}GST 18% - ${fmtINRPlain(q.gst)}
 
 Net Payable - ${fmtINRPlain(q.net)}
 
@@ -1539,6 +1616,20 @@ function buildQuotePdf(doc, q){
     if(i < q.categoryLines.length - 1) divider();
   });
   divider();
+
+  // ---- Discount / TAC (only shown when a percentage was selected —
+  // keeps the PDF looking exactly as before at 0%) ----
+  if(q.adjustmentPercent > 0){
+    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
+    labelValueRow("Tent Rate", fmtINRForPdf(q.grossTentRate));
+    labelValueRow(`${label} (${q.adjustmentPercent}%)`, `-${fmtINRForPdf(q.adjustmentAmount)}`);
+    labelValueRow(`Tent Rate After ${label}`, fmtINRForPdf(q.netTentRate), true);
+    if(q.mattressTotal > 0){
+      labelValueRow("Extra Mattress", fmtINRForPdf(q.mattressTotal));
+    }
+    labelValueRow("Taxable Amount", fmtINRForPdf(q.taxableAmount), true);
+    divider();
+  }
 
   // ---- Price summary ----
   ensureSpace(70);
