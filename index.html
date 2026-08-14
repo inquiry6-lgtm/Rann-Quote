@@ -644,93 +644,79 @@ const TIER1_SEASON = [
    PDF, on-screen preview, and any future surface all read from this
    single constant — nothing is duplicated per output format.
    ================================================================ */
+// Shared building blocks — reused verbatim across packages instead of
+// being retyped per package, so there is exactly one place to edit
+// each recurring day's content.
+
+// Detailed arrival day — identical for all three packages.
+const COMMON_DAY_1_ITEMS = [
+  { time: "12:30 PM onwards", activity: "Arrival at Rann Utsav – The Tent City, Dhordo from Bhuj. Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the respective dining area." },
+  { time: "02:30 PM – 04:30 PM", activity: "Leisure time. Guests may enjoy an exciting range of activities at Skyzilla, Club House, Craft Market/Haat, various selfie points, Rejuvenation Centre, Art Gallery, live demonstration area of Kutch crafts and other available activities." },
+  { time: "04:00 PM – 05:00 PM", activity: "Hi-tea at the respective dining area." },
+  { time: "05:00 PM – 07:00 PM", activity: "Visit Sunset Point and the breathtaking White Rann to witness the grandeur of the setting sun. Transfers may be arranged by bus, camel cart or a combination as applicable." },
+  { time: "07:00 PM – 07:30 PM", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
+  { time: "07:30 PM – 10:00 PM", activity: "Enjoy dinner at the respective dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Enjoy the culture of Kutch along with entertaining activities at the cultural activity area." },
+];
+
+// Sunrise Point + Kala Dungar / Gandhi Nu Gaam day — identical for the
+// 2 Nights/3 Days and 3 Nights/4 Days packages (their Day 2).
+const SUNRISE_KALADUNGAR_ITEMS = [
+  { time: "06:00 AM – 06:30 AM", activity: "Morning Tea and departure for Sunrise Point." },
+  { time: "06:30 AM – 07:30 AM", activity: "Visit the Sunrise Point at the White Desert." },
+  { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+  { time: "10:00 AM – 12:30 PM", activity: "Leisure time. Guests may enjoy activities at Skyzilla, Club House, Craft Market/Haat, various selfie points, Rejuvenation Centre, Art Gallery, live demonstrations of Kutch crafts and other available activities." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy lunch at the respective dining area." },
+  { time: "02:30 PM – 03:00 PM", activity: "Departure for Kala Dungar." },
+  { time: "03:00 PM – 07:30 PM", activity: "Visit Kala Dungar and Gandhi Nu Gaam, followed by return to Rann Utsav – The Tent City, Dhordo." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the respective dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Enjoy cultural activities and entertainment at the cultural activity area." },
+];
+
+// Final checkout-day morning — identical across all three packages
+// (Day 2 of 1N/2D, Day 3 of 2N/3D, Day 4 of 3N/4D).
+const CHECKOUT_ITEMS = [
+  { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+  { time: "06:30 AM – 07:30 AM", activity: "Yoga session at the dedicated area." },
+  { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+  { time: "09:30 AM onwards", activity: "Check-out from Rann Utsav – The Tent City, Dhordo, followed by complimentary sightseeing of Shree Swaminarayan Temple and Kutch Museum." },
+];
+const CHECKOUT_NOTE = "Kutch Museum remains closed every Wednesday.";
+
+// Dholavira via Road Through Heaven — unique to Day 3 of the 3 Nights /
+// 4 Days package.
+const DHOLAVIRA_ITEMS = [
+  { time: "01:30 PM – 02:00 PM", activity: "Departure for Dholavira via Road Through Heaven. Approximate distance: 105 km, with around two hours of travel." },
+  { time: "03:30 PM – 05:30 PM", activity: "Visit the Archaeological Museum and Dholavira Excavation Site." },
+  { time: "06:00 PM – 06:45 PM", activity: "Drive through the Road Through Heaven as the evening sky displays vibrant colours." },
+  { time: "08:00 PM – 08:30 PM", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
+];
+const DHOLAVIRA_NOTE = "The Archaeological Museum remains closed every Friday.";
+
 const ITINERARIES = {
   "1": {
     label: "1 Night / 2 Days",
     days: [
-      {
-        title: "Day 1",
-        items: [
-          { time: "17:00 - 17:30", activity: "Departure for Sunset Point." },
-          { time: "17:30 - 19:00", activity: "Visit Sunset Point at the White Desert." },
-          { time: "19:00 - 19:30", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-      },
-      {
-        title: "Day 2",
-        items: [
-          { time: "09:30 onwards", activity: "Check-out and complimentary sightseeing of Shree Swaminarayan Temple and Kutch Museum." },
-        ],
-        note: "Kutch Museum remains closed every Wednesday.",
-      },
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
     ],
   },
   "2": {
     label: "2 Nights / 3 Days",
     days: [
-      {
-        title: "Day 1",
-        items: [
-          { time: "17:00 - 17:30", activity: "Departure for Sunset Point." },
-          { time: "17:30 - 19:00", activity: "Visit Sunset Point at the White Desert." },
-          { time: "19:00 - 19:30", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-      },
-      {
-        title: "Day 2",
-        items: [
-          { time: "06:00 - 06:30", activity: "Departure for Sunrise Point." },
-          { time: "06:30 - 07:30", activity: "Visit the Sunrise Point at the White Desert." },
-          { time: "14:30 - 15:00", activity: "Departure for Kala Dungar." },
-          { time: "15:00 - 19:30", activity: "Visit Kala Dungar and Gandhi Nu Gaam, followed by return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-      },
-      {
-        title: "Day 3",
-        items: [
-          { time: "09:30 onwards", activity: "Check-out and complimentary sightseeing of Shree Swaminarayan Temple and Kutch Museum." },
-        ],
-        note: "Kutch Museum remains closed every Wednesday.",
-      },
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: SUNRISE_KALADUNGAR_ITEMS },
+      { title: "Day 3", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
     ],
   },
   "3": {
     label: "3 Nights / 4 Days",
     days: [
-      {
-        title: "Day 1",
-        items: [
-          { time: "17:00 - 17:30", activity: "Departure for Sunset Point." },
-          { time: "17:30 - 19:00", activity: "Visit Sunset Point at the White Desert." },
-          { time: "19:00 - 19:30", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-      },
-      {
-        title: "Day 2",
-        items: [
-          { time: "06:00 - 06:30", activity: "Departure for Sunrise Point." },
-          { time: "06:30 - 07:30", activity: "Visit the Sunrise Point at the White Desert." },
-          { time: "14:30 - 15:00", activity: "Departure for Kala Dungar." },
-          { time: "15:00 - 19:30", activity: "Visit Kala Dungar and Gandhi Nu Gaam, followed by return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-      },
-      {
-        title: "Day 3",
-        items: [
-          { time: "13:30 - 14:00", activity: "Departure for Road Through Heaven. Approximate distance: 105 km, with around two hours of travel." },
-          { time: "15:30 - 17:30", activity: "Visit the Archaeological Museum and Dholavira Excavation Site." },
-          { time: "18:00 - 18:45", activity: "Drive through the Road Through Heaven as the evening sky erupts in vibrant colours." },
-          { time: "20:00 - 20:30", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
-        ],
-        note: "The museum remains closed every Friday.",
-      },
-      {
-        title: "Day 4",
-        items: [
-          { time: "09:30 onwards", activity: "Check-out and complimentary sightseeing of Shree Swaminarayan Temple and Kutch Museum." },
-        ],
-        note: "Kutch Museum remains closed every Wednesday.",
-      },
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: SUNRISE_KALADUNGAR_ITEMS },
+      { title: "Day 3", items: DHOLAVIRA_ITEMS, note: DHOLAVIRA_NOTE },
+      { title: "Day 4", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
     ],
   },
 };
