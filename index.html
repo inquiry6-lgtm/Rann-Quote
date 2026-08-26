@@ -442,6 +442,17 @@
             <input id="contactNumber" name="contactNumber" type="tel" placeholder="Optional" autocomplete="tel" inputmode="tel">
           </div>
           <div class="field">
+            <label for="bookingType">Booking Type</label>
+            <select id="bookingType" name="bookingType">
+              <option value="rann" selected>Rann Utsav – Tent City Only</option>
+              <option value="rann_dholavira">Rann Utsav + Evoke Dholavira</option>
+              <option value="dholavira">Evoke Dholavira Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="rannSection">
+          <div class="field">
             <label for="nights">Select Package</label>
             <select id="nights" name="nights">
               <option value="1">1 Night / 2 Days</option>
@@ -449,58 +460,137 @@
               <option value="3">3 Nights / 4 Days</option>
             </select>
           </div>
-        </div>
 
-        <div class="row2">
-          <div class="field">
-            <label for="checkinDate">Check-In</label>
-            <input id="checkinDate" name="checkinDate" type="date" min="2026-11-01" max="2027-03-07" required aria-required="true">
-          </div>
-          <div class="field">
-            <label for="checkoutDate">Check-Out</label>
-            <input id="checkoutDate" name="checkoutDate" type="text" disabled placeholder="Auto-calculated" aria-live="polite">
-          </div>
-        </div>
-
-        <div id="dateWarn" class="banner warn-box" role="alert"></div>
-        <div id="peakBanner" class="banner peak-banner" role="status"></div>
-
-        <div class="field">
-          <label for="peakOverride">Peak Date Charge</label>
-          <select id="peakOverride" name="peakOverride">
-            <option value="auto">Auto-detect from date</option>
-            <option value="none">No additional charge</option>
-            <option value="tier1">Standard Peak (Tier 1)</option>
-            <option value="tier2">Christmas / High Peak (Tier 2)</option>
-          </select>
-        </div>
-
-        <hr class="divider">
-
-        <div id="linesContainer"></div>
-        <button class="btn btn-ghost" id="addLineBtn" type="button">+ Add Another Tent Category</button>
-
-        <hr class="divider">
-
-        <!-- DISCOUNT / TAC -->
-        <div class="discount-section">
-          <p class="discount-heading">Discount / TAC</p>
           <div class="row2">
             <div class="field">
-              <label for="adjustmentType">Adjustment Type</label>
-              <select id="adjustmentType" name="adjustmentType">
-                <option value="discount" selected>Discount</option>
-                <option value="tac">TAC</option>
+              <label for="checkinDate">Check-In</label>
+              <input id="checkinDate" name="checkinDate" type="date" min="2026-11-01" max="2027-03-07" required aria-required="true">
+            </div>
+            <div class="field">
+              <label for="checkoutDate">Check-Out</label>
+              <input id="checkoutDate" name="checkoutDate" type="text" disabled placeholder="Auto-calculated" aria-live="polite">
+            </div>
+          </div>
+
+          <div id="dateWarn" class="banner warn-box" role="alert"></div>
+          <div id="peakBanner" class="banner peak-banner" role="status"></div>
+
+          <div class="field">
+            <label for="peakOverride">Peak Date Charge</label>
+            <select id="peakOverride" name="peakOverride">
+              <option value="auto">Auto-detect from date</option>
+              <option value="none">No additional charge</option>
+              <option value="tier1">Standard Peak (Tier 1)</option>
+              <option value="tier2">Christmas / High Peak (Tier 2)</option>
+            </select>
+          </div>
+
+          <hr class="divider">
+
+          <div id="linesContainer"></div>
+          <button class="btn btn-ghost" id="addLineBtn" type="button">+ Add Another Tent Category</button>
+
+          <hr class="divider">
+
+          <!-- DISCOUNT / TAC (Rann) -->
+          <div class="discount-section">
+            <p class="discount-heading">Discount / TAC</p>
+            <div class="row2">
+              <div class="field">
+                <label for="adjustmentType">Adjustment Type</label>
+                <select id="adjustmentType" name="adjustmentType">
+                  <option value="discount" selected>Discount</option>
+                  <option value="tac">TAC</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="adjustmentPercent">Percentage</label>
+                <select id="adjustmentPercent" name="adjustmentPercent">
+                  <option value="0" selected>0% — No Discount</option>
+                  <option value="5">5%</option>
+                  <option value="10">10%</option>
+                  <option value="15">15%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" id="rannEvokeDivider">
+
+        <!-- EVOKE DHOLAVIRA -->
+        <div id="evokeSection" hidden>
+          <p class="discount-heading" style="margin:0 0 12px;">Evoke Dholavira</p>
+
+          <div class="row2">
+            <div class="field">
+              <label for="evokeNights">Dholavira Stay</label>
+              <select id="evokeNights" name="evokeNights">
+                <option value="1">1 Night / 2 Days</option>
+                <option value="2">2 Nights / 3 Days</option>
               </select>
             </div>
             <div class="field">
-              <label for="adjustmentPercent">Percentage</label>
-              <select id="adjustmentPercent" name="adjustmentPercent">
-                <option value="0" selected>0% — No Discount</option>
-                <option value="5">5%</option>
-                <option value="10">10%</option>
-                <option value="15">15%</option>
-              </select>
+              <label id="evokeCheckinLabel" for="evokeCheckinDisplay">Dholavira Check-in (auto)</label>
+              <input id="evokeCheckinDisplay" type="text" disabled placeholder="Calculated from Rann checkout">
+              <input id="evokeOnlyCheckin" type="date" min="2026-11-01" max="2027-02-28" hidden>
+            </div>
+          </div>
+
+          <div id="evokeSeasonWarn" class="banner warn-box" role="alert"></div>
+
+          <div id="evokeControls">
+            <div class="row2">
+              <div class="field">
+                <label for="evokeAccommodation">Accommodation</label>
+                <select id="evokeAccommodation" name="evokeAccommodation">
+                  <option value="Premium Cottage">Premium Cottage</option>
+                  <option value="Deluxe Tent">Deluxe Tent</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="evokeRooms">No. of Rooms</label>
+                <select id="evokeRooms" name="evokeRooms"></select>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="evokeSingleOcc">Single Occupancy</label>
+                <select id="evokeSingleOcc" name="evokeSingleOcc">
+                  <option value="no">No</option>
+                  <option value="yes">Yes — 75% of Double Occupancy Cost</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="evokeMattress">Extra Mattress Quantity</label>
+                <input id="evokeMattress" type="number" min="0" value="0" inputmode="numeric">
+              </div>
+            </div>
+
+            <p class="itsub" id="evokeJourneyTotal" style="margin:2px 0 10px;"></p>
+
+            <!-- EVOKE DISCOUNT / TAC — independent from Rann's -->
+            <div class="discount-section">
+              <p class="discount-heading">Evoke Discount / TAC</p>
+              <div class="row2">
+                <div class="field">
+                  <label for="dholaviraAdjustmentType">Adjustment Type</label>
+                  <select id="dholaviraAdjustmentType" name="dholaviraAdjustmentType">
+                    <option value="discount" selected>Discount</option>
+                    <option value="tac">TAC</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="dholaviraAdjustmentPercent">Percentage</label>
+                  <select id="dholaviraAdjustmentPercent" name="dholaviraAdjustmentPercent">
+                    <option value="0" selected>0%</option>
+                    <option value="5">5%</option>
+                    <option value="10">10%</option>
+                    <option value="15">15%</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -544,15 +634,22 @@
           </div>
           <div class="quote-body">
             <div class="qsection">
-              <p class="qlabel">Stay Details</p>
+              <p class="qlabel">Guest Details</p>
               <div class="qrow"><span class="k">Guest Name</span><span class="v" id="rName">—</span></div>
-              <div class="qrow"><span class="k">Check-in Date</span><span class="v" id="rCheckin">—</span></div>
-              <div class="qrow"><span class="k">Check-out Date</span><span class="v" id="rCheckout">—</span></div>
             </div>
-            <div class="qsection">
-              <p class="qlabel">Tent Details</p>
-              <div id="rCategoryLines"></div>
+            <div id="rRannSection">
+              <div class="qsection">
+                <p class="qlabel">Stay Details</p>
+                <div class="qrow"><span class="k">Check-in Date</span><span class="v" id="rCheckin">—</span></div>
+                <div class="qrow"><span class="k">Check-out Date</span><span class="v" id="rCheckout">—</span></div>
+              </div>
+              <div class="qsection">
+                <p class="qlabel">Tent Details</p>
+                <div id="rCategoryLines"></div>
+              </div>
+              <div id="rDiscountRows"></div>
             </div>
+            <div id="rEvokeSection"></div>
             <div class="price-table">
               <div id="rAdjustmentRows"></div>
               <div class="price-row"><span>GST (18%)</span><span class="amt" id="rGST">₹0</span></div>
@@ -722,6 +819,221 @@ const ITINERARIES = {
 };
 
 /* ================================================================
+   EVOKE DHOLAVIRA EXTENSION — isolated module
+   Deliberately kept separate from the Rann RATES/ADDITIONAL/tier
+   engine above: its own rate table, its own date-tier windows, its
+   own per-night calculation function. The only things it reuses are
+   generic date-safety helpers (parseLocalDate/addDaysLocal/inRange)
+   that have nothing Rann-specific about them.
+   ================================================================ */
+const EVOKE_SEASON_START = "2026-11-01";
+const EVOKE_SEASON_END   = "2027-02-28";
+
+const EVOKE_RATES = {
+  "Premium Cottage": { base: 7900 },
+  "Deluxe Tent":      { base: 7100 },
+  mattressBase: 4500,
+};
+
+// Level 1 — ₹1,500/person/night, ₹5,000/mattress/night.
+// Diwali + Nov Full Moon + Feb Full Moon are explicit windows; ordinary
+// December and January nights (i.e. every night in those two months
+// that Level 2 below doesn't already claim) are Level 1 too.
+const EVOKE_LEVEL1_SPECIFIC = [
+  ["2026-11-08","2026-11-14"], // Diwali
+  ["2026-11-22","2026-11-25"], // November Full Moon
+  ["2027-02-18","2027-02-21"], // February Full Moon
+];
+
+// Level 2 — ₹3,000/person/night, ₹5,500/mattress/night. Christmas
+// (18 Dec–2 Jan) already spans December Full Moon (21–24 Dec), so
+// that single range check naturally prevents double-charging the
+// overlap — there is no separate Dec-Full-Moon entry to stack.
+const EVOKE_LEVEL2_RANGES = [
+  ["2026-12-18","2027-01-02"], // Christmas (covers Dec Full Moon overlap)
+  ["2027-01-20","2027-01-23"], // January Full Moon
+];
+
+/* Classifies a single calendar night for Evoke Dholavira pricing.
+   Called once per night of the stay (never once for the whole stay),
+   per the tariff's own per-night structure. Shared by the live quote,
+   the PDF, and Share PDF — nothing recalculates this independently. */
+function getEvokeRateForDate(dateStr){
+  if(inRange(dateStr, EVOKE_LEVEL2_RANGES)){
+    return { tier: "level2", supplement: 3000, mattressRate: 5500 };
+  }
+  if(inRange(dateStr, EVOKE_LEVEL1_SPECIFIC)){
+    return { tier: "level1", supplement: 1500, mattressRate: 5000 };
+  }
+  const d = parseLocalDate(dateStr);
+  const y = d.getFullYear(), m = d.getMonth(); // month: 0 = Jan, 11 = Dec
+  if((y === 2026 && m === 11) || (y === 2027 && m === 0)){
+    // Ordinary December 2026 / January 2027 night, not already
+    // claimed by a Level 2 window above.
+    return { tier: "level1", supplement: 1500, mattressRate: 5000 };
+  }
+  // Ordinary November/February night (not Diwali/Full Moon), or any
+  // date outside Nov/Dec/Jan/Feb entirely — base rate, no surcharge.
+  // Dark Moon dates deliberately fall through to here: the supplied
+  // tariff identifies them but defines no surcharge for them.
+  return { tier: "base", supplement: 0, mattressRate: EVOKE_RATES.mattressBase };
+}
+
+/* Single shared pricing calculation for an Evoke Dholavira stay —
+   walks every night of the stay individually (never classifies the
+   whole stay from just its check-in date), sums accommodation and
+   mattress cost per night, and returns the combined result used
+   identically by the live quote, the quote card, the PDF, Share PDF,
+   and the WhatsApp summary. */
+function computeEvokeStay({ accommodation, nights, checkinStr, rooms, singleOcc, mattressQty }){
+  const baseRate = EVOKE_RATES[accommodation].base;
+  let accommodationTotal = 0;
+  let mattressTotal = 0;
+  const nightBreakdown = [];
+
+  for(let i = 0; i < nights; i++){
+    const nightDateStr = toISODateLocal(addDaysLocal(checkinStr, i));
+    const rateInfo = getEvokeRateForDate(nightDateStr);
+    const finalPerPersonNightRate = baseRate + rateInfo.supplement;
+
+    // Single occupancy: 75% of the double-occupancy cost per room,
+    // i.e. finalPerPersonNightRate x 2 x 0.75 = x1.5 — charged once
+    // per room, never multiplied by an adult count again. Double
+    // occupancy: the normal x2-per-room calculation.
+    const nightRoomRate = singleOcc ? finalPerPersonNightRate * 1.5 : finalPerPersonNightRate * 2;
+    accommodationTotal += nightRoomRate * rooms;
+
+    if(mattressQty > 0){
+      mattressTotal += mattressQty * rateInfo.mattressRate; // never affected by single occupancy
+    }
+    nightBreakdown.push({ date: nightDateStr, tier: rateInfo.tier });
+  }
+
+  const guestsPerRoom = singleOcc ? 1 : 2;
+  return {
+    accommodationTotal,
+    mattressTotal,
+    subtotal: accommodationTotal + mattressTotal,
+    totalGuests: guestsPerRoom * rooms,
+    nightBreakdown,
+  };
+}
+
+/* ================================================================
+   EVOKE DHOLAVIRA — ITINERARY CONTENT
+   ================================================================ */
+const EVOKE_DAY1_ITEMS = [
+  { time: "12:30 PM onwards", activity: "Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the dining area featuring local flavours." },
+  { time: "02:30 PM – 03:30 PM", activity: "Leisure time / indulge in in-house activities such as swimming pool or clubhouse games including chess, carrom and snooker." },
+  { time: "03:30 PM – 04:00 PM", activity: "Tea/coffee at the dining area." },
+  { time: "04:00 PM – 05:30 PM", activity: "Visit the Archaeology Museum and Excavation Site. Dholavira Excavation Site is one of the best-preserved Harappan cities." },
+  { time: "05:30 PM – 07:30 PM", activity: "Spend the evening at Road Through Heaven and return to Dholavira Resort." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+  { time: "10:00 PM – 10:30 PM", activity: "Stargazing under the desert sky." },
+];
+const EVOKE_DAY1_NOTE = "The museum remains closed every Friday.";
+
+// Used instead of EVOKE_DAY1_ITEMS only when the guest's Rann Utsav
+// stay was 3 Nights/4 Days — that itinerary's Day 3 already visits
+// the Archaeological Museum, Excavation Site and Road Through Heaven,
+// so this variant skips those to avoid showing them twice. Pricing is
+// completely unaffected either way.
+const EVOKE_DAY1_ITEMS_DEDUP = [
+  { time: "12:30 PM onwards", activity: "Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the dining area featuring local flavours." },
+  { time: "02:30 PM – 04:00 PM", activity: "Leisure time / indulge in in-house activities such as swimming pool or clubhouse games including chess, carrom and snooker." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+  { time: "10:00 PM – 10:30 PM", activity: "Stargazing under the desert sky." },
+];
+const EVOKE_DEDUP_NOTE = "Dholavira Archaeological Museum, Excavation Site and Road Through Heaven were covered during the Rann Utsav itinerary and are therefore not repeated.";
+
+const EVOKE_CHECKOUT_DROPOFF = "Drop-off to Bhuj Railway Station / Bhuj Airport or Rann Utsav – The Tent City, Dhordo, depending on the guest's onward journey.";
+
+const EVOKE_ITINERARIES = {
+  "1": {
+    label: "1 Night / 2 Days",
+    days: [
+      { title: "Day 1", items: EVOKE_DAY1_ITEMS, note: EVOKE_DAY1_NOTE },
+      { title: "Day 2", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM", activity: `Check-out from Evoke Dholavira Resort. ${EVOKE_CHECKOUT_DROPOFF}` },
+      ]},
+    ],
+  },
+  "2": {
+    label: "2 Nights / 3 Days",
+    days: [
+      { title: "Day 1", items: EVOKE_DAY1_ITEMS, note: EVOKE_DAY1_NOTE },
+      { title: "Day 2", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM – 11:30 AM", activity: "Fossil Park Visit. Marvel at ancient fossils and remnants of a prehistoric world at Kutch Fossil Park." },
+        { time: "12:30 PM – 02:30 PM", activity: "Lunch." },
+        { time: "02:30 PM – 03:30 PM", activity: "Leisure / in-house activities." },
+        { time: "05:00 PM – 06:30 PM", activity: "Visit Dattatreya Temple with views of the sunset." },
+        { time: "07:30 PM – 10:00 PM", activity: "Dinner." },
+        { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+        { time: "10:00 PM – 10:30 PM", activity: "Stargazing." },
+      ]},
+      { title: "Day 3", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM", activity: `Check-out. ${EVOKE_CHECKOUT_DROPOFF}` },
+      ]},
+    ],
+  },
+};
+
+/* Returns the Evoke Dholavira itinerary days for the given stay
+   length, substituting the deduplicated Day 1 when the guest's Rann
+   Utsav stay was 3 Nights/4 Days (see EVOKE_DAY1_ITEMS_DEDUP above). */
+function getEvokeDays(evokeNights, dedupArchaeology){
+  const base = EVOKE_ITINERARIES[String(evokeNights)];
+  if(!base) return [];
+  const days = base.days.map(d => ({ ...d }));
+  if(dedupArchaeology && days.length > 0){
+    days[0] = { ...days[0], items: EVOKE_DAY1_ITEMS_DEDUP, note: EVOKE_DEDUP_NOTE };
+  }
+  return days;
+}
+
+// Rann Utsav's final (checkout) day content, used when NOT extending
+// to Evoke Dholavira — identical to the existing CHECKOUT_ITEMS.
+function getRannCheckoutItems(hasEvokeExtension){
+  if(!hasEvokeExtension) return CHECKOUT_ITEMS;
+  // The checkout day becomes a transfer day instead of the normal
+  // temple/museum sightseeing.
+  return [
+    { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+    { time: "06:30 AM – 07:30 AM", activity: "Yoga session at the dedicated area." },
+    { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+    { time: "09:30 AM onwards", activity: "Check-out from Rann Utsav – The Tent City, Dhordo." },
+    { time: "10:30 AM", activity: "Transfer from Rann Utsav – The Tent City, Dhordo to Evoke Dholavira." },
+    { time: "12:30 PM onwards", activity: "Arrival / check-in at Evoke Dholavira." },
+  ];
+}
+
+/* Returns the Rann Utsav itinerary days for the given package length.
+   When an Evoke Dholavira extension follows, only the LAST day's
+   content is swapped for the transfer-day version above — the base
+   ITINERARIES object itself is never mutated, so the existing
+   itinerary (extension = No) is completely unaffected. */
+function getRannDays(rannNights, hasEvokeExtension){
+  const base = ITINERARIES[String(rannNights)];
+  if(!base) return [];
+  const days = base.days.map(d => ({ ...d }));
+  if(hasEvokeExtension && days.length > 0){
+    const lastIdx = days.length - 1;
+    days[lastIdx] = { ...days[lastIdx], items: getRannCheckoutItems(true), note: undefined };
+  }
+  return days;
+}
+
+/* ================================================================
    DOM HELPERS
    ================================================================ */
 const $ = (id) => document.getElementById(id);
@@ -737,6 +1049,13 @@ let lastQuote = null;
 // the checkbox at the last moment, so it stays consistent regardless
 // of when/where it's needed.
 let includeItinerary = false;
+// Booking Type governs which sections apply — "rann" (default),
+// "rann_dholavira" (both), or "dholavira" (Evoke only). This replaces
+// the old standalone "Include Evoke Dholavira Stay?" toggle, which
+// would otherwise be redundant with (and could contradict) this
+// selector. `includeEvoke` is derived from it, not from a checkbox.
+let bookingType = "rann";
+let includeEvoke = false; // derived: bookingType !== "rann" — see applyBookingType()
 
 /* ================================================================
    PEAK-DATE DETECTION
@@ -808,6 +1127,17 @@ function addDaysLocal(checkinStr, days){
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + days);
   return dt;
+}
+
+/* Inverse of addDaysLocal/parseLocalDate — formats a local Date back
+   into a "YYYY-MM-DD" string using its local Y/M/D components (never
+   toISOString(), which would reintroduce the UTC-shift risk these
+   helpers exist to avoid). */
+function toISODateLocal(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 /* ================================================================
@@ -1105,20 +1435,21 @@ function updateCheckoutAndBanner(){
   dateWarn.classList.remove("show"); dateWarn.textContent = "";
 
   if(checkin){
-    const d = new Date(checkin);
-    d.setDate(d.getDate() + nights);
-    checkoutField.value = fmtDate(d.toISOString().slice(0,10));
+    const rannCheckoutStr = toISODateLocal(addDaysLocal(checkin, nights));
+    checkoutField.value = fmtDate(rannCheckoutStr);
 
     if(checkin < SEASON_START || checkin > SEASON_END){
       dateWarn.textContent = "Selected date is outside the current season (1 Nov 2026 – 7 Mar 2027). Please choose a date within this range.";
       dateWarn.classList.add("show");
-    } else if(d.toISOString().slice(0,10) > SEASON_END){
+    } else if(rannCheckoutStr > SEASON_END){
       dateWarn.textContent = "This stay extends beyond the season end (7 Mar 2027). Please adjust the check-in date or package length.";
       dateWarn.classList.add("show");
     }
   } else {
     checkoutField.value = "";
   }
+
+  updateEvokeCheckin();
 
   const override = $("peakOverride").value;
   const tier = override === "auto" ? detectPeakTier(checkin, nights) : override;
@@ -1131,6 +1462,107 @@ function updateCheckoutAndBanner(){
     banner.classList.add("show","tier2");
   }
   return tier;
+}
+
+/* ================================================================
+   EVOKE DHOLAVIRA — auto check-in date, season validation, journey
+   duration. Runs on Rann check-in/package change AND on the Evoke
+   toggle/duration change, so the calculated date is always current
+   without needing "Generate Quotation" first.
+   ================================================================ */
+/* ================================================================
+   BOOKING TYPE
+   Governs which sections are shown/required. "rann" (default) keeps
+   the site behaving exactly as before this feature. "rann_dholavira"
+   shows both sections with the Evoke check-in auto-calculated from
+   the Rann checkout. "dholavira" hides the entire Rann section and
+   switches the Evoke check-in to a manually-selectable date.
+   ================================================================ */
+function applyBookingType(){
+  bookingType = $("bookingType").value;
+  includeEvoke = bookingType !== "rann";
+  const isDholaviraOnly = bookingType === "dholavira";
+
+  $("rannSection").hidden = isDholaviraOnly;
+  $("rannEvokeDivider").hidden = isDholaviraOnly; // avoid a stray double divider when Rann is hidden
+  $("evokeSection").hidden = !includeEvoke;
+
+  const autoField = $("evokeCheckinDisplay");
+  const manualField = $("evokeOnlyCheckin");
+  const label = $("evokeCheckinLabel");
+  if(isDholaviraOnly){
+    autoField.hidden = true;
+    manualField.hidden = false;
+    label.textContent = "Evoke Dholavira Check-in Date";
+    label.setAttribute("for", "evokeOnlyCheckin");
+  } else {
+    autoField.hidden = false;
+    manualField.hidden = true;
+    label.textContent = "Dholavira Check-in (auto)";
+    label.setAttribute("for", "evokeCheckinDisplay");
+  }
+
+  updateEvokeCheckin();
+  renderItineraryPreview();
+  maybeLiveUpdate();
+}
+
+/* Single shared source for "what is the Evoke Dholavira check-in
+   date right now" — used by the live preview, updateEvokeCheckin(),
+   and generateQuote() alike, so the auto vs manual logic never has
+   to be duplicated or drift out of sync between them. Returns null
+   when the date isn't determinable yet (e.g. no Rann check-in chosen
+   in combined mode, or no date picked yet in Evoke-only mode). */
+function getEvokeCheckinDateStr(){
+  if(!includeEvoke) return null;
+  if(bookingType === "dholavira"){
+    const v = $("evokeOnlyCheckin").value;
+    return v || null;
+  }
+  const rannCheckin = $("checkinDate").value;
+  if(!rannCheckin) return null;
+  const rannNights = parseInt($("nights").value, 10);
+  return toISODateLocal(addDaysLocal(rannCheckin, rannNights));
+}
+
+function updateEvokeCheckin(){
+  const warnBox = $("evokeSeasonWarn");
+  const journeyEl = $("evokeJourneyTotal");
+  warnBox.classList.remove("show"); warnBox.textContent = "";
+
+  if(!includeEvoke){
+    $("evokeCheckinDisplay").value = "";
+    journeyEl.textContent = "";
+    return;
+  }
+
+  const evokeCheckinStr = getEvokeCheckinDateStr();
+  const evokeNights = parseInt($("evokeNights").value, 10);
+
+  if(bookingType !== "dholavira"){
+    // Combined mode: keep the read-only display in sync (Evoke-only
+    // mode uses its own native date input, which needs no such sync).
+    $("evokeCheckinDisplay").value = evokeCheckinStr ? fmtDate(evokeCheckinStr) : "";
+  }
+
+  if(!evokeCheckinStr){
+    journeyEl.textContent = "";
+    return;
+  }
+
+  if(evokeCheckinStr < EVOKE_SEASON_START || evokeCheckinStr > EVOKE_SEASON_END){
+    warnBox.textContent = "This Evoke Dholavira check-in date (" + fmtDate(evokeCheckinStr) + ") falls outside the Evoke Dholavira season (1 Nov 2026 – 28 Feb 2027). Please adjust the date before generating the quotation.";
+    warnBox.classList.add("show");
+  }
+
+  if(bookingType === "rann_dholavira"){
+    const rannNights = parseInt($("nights").value, 10);
+    const totalNights = rannNights + evokeNights;
+    const totalDays = totalNights + 1;
+    journeyEl.textContent = `Total Journey: ${totalNights} Night${totalNights > 1 ? "s" : ""} / ${totalDays} Days (Rann Utsav ${rannNights}N + Evoke Dholavira ${evokeNights}N)`;
+  } else {
+    journeyEl.textContent = "";
+  }
 }
 
 /* ================================================================
@@ -1149,22 +1581,8 @@ function renderItineraryPreview(){
     return;
   }
 
-  const nights = parseInt($("nights").value, 10);
-  const itinerary = ITINERARIES[String(nights)];
-  if(!itinerary){
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-
-  const checkin = $("checkinDate").value; // may be empty — handled below
-
-  const dayCards = itinerary.days.map((day, i) => {
-    let dateLabel = "";
-    if(checkin){
-      const dt = addDaysLocal(checkin, i);
-      dateLabel = `<span class="itin-day-date">${fmtDateLong(dt)}</span>`;
-    }
+  function dayCardHtml(day, dt){
+    const dateLabel = dt ? `<span class="itin-day-date">${fmtDateLong(dt)}</span>` : "";
     const itemsHtml = day.items.map(it =>
       `<div class="itin-item"><span class="itin-time">${it.time}</span><span class="itin-activity">${it.activity}</span></div>`
     ).join("");
@@ -1178,13 +1596,73 @@ function renderItineraryPreview(){
         ${itemsHtml}
         ${noteHtml}
       </div>`;
-  }).join("");
+  }
+
+  // ---- Evoke Dholavira only: no Rann itinerary at all ----
+  if(bookingType === "dholavira"){
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeItinerary = EVOKE_ITINERARIES[String(evokeNights)];
+    if(!evokeItinerary){
+      container.hidden = true;
+      container.innerHTML = "";
+      return;
+    }
+    const evokeCheckin = getEvokeCheckinDateStr();
+    const evokeDays = getEvokeDays(evokeNights, false); // no Rann stay to dedup against
+    const evokeCards = evokeDays.map((day, i) =>
+      dayCardHtml(day, evokeCheckin ? addDaysLocal(evokeCheckin, i) : null)
+    ).join("");
+
+    container.hidden = false;
+    container.innerHTML = `
+      <p class="qlabel" style="margin:0 0 10px;">EVOKE DHOLAVIRA ITINERARY — ${evokeItinerary.label}</p>
+      ${evokeCards}
+    `;
+    return;
+  }
+
+  // ---- Rann only, or Rann + Evoke ----
+  const nights = parseInt($("nights").value, 10);
+  const rannItinerary = ITINERARIES[String(nights)];
+  if(!rannItinerary){
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  const checkin = $("checkinDate").value; // may be empty — handled below
+
+  const rannDays = getRannDays(nights, includeEvoke);
+  const rannCards = rannDays.map((day, i) =>
+    dayCardHtml(day, checkin ? addDaysLocal(checkin, i) : null)
+  ).join("");
+
+  let html;
+  if(!includeEvoke){
+    html = `
+      <p class="qlabel" style="margin:0 0 10px;">${rannItinerary.label} — Itinerary Preview</p>
+      ${rannCards}
+    `;
+  } else {
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeItinerary = EVOKE_ITINERARIES[String(evokeNights)];
+    const evokeCheckin = getEvokeCheckinDateStr();
+    const dedup = nights === 3; // Rann 3N/4D already covers the archaeological sightseeing
+    const evokeDays = getEvokeDays(evokeNights, dedup);
+    const evokeCards = evokeDays.map((day, i) =>
+      dayCardHtml(day, evokeCheckin ? addDaysLocal(evokeCheckin, i) : null)
+    ).join("");
+
+    html = `
+      <p class="qlabel" style="margin:0 0 10px;">RANN UTSAV ITINERARY — ${rannItinerary.label}</p>
+      ${rannCards}
+      <p class="qlabel" style="margin:16px 0 10px;">EVOKE DHOLAVIRA — EXTENDED STAY — ${evokeItinerary ? evokeItinerary.label : ""}</p>
+      ${evokeCards}
+    `;
+  }
 
   container.hidden = false;
-  container.innerHTML = `
-    <p class="qlabel" style="margin:0 0 10px;">${itinerary.label} — Itinerary Preview</p>
-    ${dayCards}
-  `;
+  container.innerHTML = html;
 }
 
 /* ================================================================
@@ -1250,102 +1728,163 @@ function generateQuote(opts){
   };
 
   const name = $("guestName").value.trim();
-  const checkin = $("checkinDate").value;
-  const nights = parseInt($("nights").value, 10);
-
   if(!name){ return fail("Please enter the guest name.", "guestName"); }
-  if(!checkin){ return fail("Please select a check-in date.", "checkinDate"); }
-  if(checkin < SEASON_START || checkin > SEASON_END){ return fail("Check-in date must fall within 1 Nov 2026 – 7 Mar 2027."); }
 
-  const tier = updateCheckoutAndBanner();
-  const lineEls = qsa(".tent-line");
-  if(lineEls.length === 0){ return fail("Please add at least one tent category."); }
+  const hasRann = bookingType !== "dholavira";
+  let rann = null;
 
-  let totalGrossTentRate = 0, totalMattressCost = 0, totalGuestsBillable = 0;
-  const categoryLines = [];
+  if(hasRann){
+    const checkin = $("checkinDate").value;
+    const nights = parseInt($("nights").value, 10);
 
-  for(const line of lineEls){
-    const category = line.querySelector(".line-category").value;
-    const qty = parseInt(line.querySelector(".line-qty").value || 0, 10);
-    if(qty <= 0){ return fail("Please select the number of tents for each category."); }
-    const rate = RATES[category];
-    const singleOcc = line.querySelector(".line-singleocc").value === "yes";
-    const mattressMax = getMattressMax(category, qty);
-    let mattressQty = parseInt(line.querySelector(".line-mattress").value || 0, 10);
-    if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
-    if(mattressQty > mattressMax) mattressQty = mattressMax;
+    if(!checkin){ return fail("Please select a check-in date.", "checkinDate"); }
+    if(checkin < SEASON_START || checkin > SEASON_END){ return fail("Check-in date must fall within 1 Nov 2026 – 7 Mar 2027."); }
 
-    const tentEls = line.querySelectorAll(".tent-instance");
-    let lineGuests = 0;
-    tentEls.forEach(t=>{
-      const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
-      lineGuests += a;
-    });
-    if(lineGuests <= 0){ return fail(`Please enter guest counts for ${category}.`); }
+    const tier = updateCheckoutAndBanner();
+    const lineEls = qsa(".tent-line");
+    if(lineEls.length === 0){ return fail("Please add at least one tent category."); }
 
-    // Single shared pricing calculation — used identically by the live
-    // quote, the preview, the PDF, Share PDF, and WhatsApp text, since
-    // all of those simply read the categoryLines figures computed here
-    // once (nothing recalculates the tent rate a second time anywhere).
-    const { tentRateAmount: lineTentRateDisplay } =
-      computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
+    let totalGrossTentRate = 0, totalMattressCost = 0, totalGuestsBillable = 0;
+    const categoryLines = [];
 
-    let lineMattressCost = 0;
-    if(mattressQty > 0){
-      const mRate = (tier === "tier1" || tier === "tier2") ? rate.mattressPeak : rate.mattress;
-      lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy OR discount/TAC
+    for(const line of lineEls){
+      const category = line.querySelector(".line-category").value;
+      const qty = parseInt(line.querySelector(".line-qty").value || 0, 10);
+      if(qty <= 0){ return fail("Please select the number of tents for each category."); }
+      const rate = RATES[category];
+      const singleOcc = line.querySelector(".line-singleocc").value === "yes";
+      const mattressMax = getMattressMax(category, qty);
+      let mattressQty = parseInt(line.querySelector(".line-mattress").value || 0, 10);
+      if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
+      if(mattressQty > mattressMax) mattressQty = mattressMax;
+
+      const tentEls = line.querySelectorAll(".tent-instance");
+      let lineGuests = 0;
+      tentEls.forEach(t=>{
+        const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
+        lineGuests += a;
+      });
+      if(lineGuests <= 0){ return fail(`Please enter guest counts for ${category}.`); }
+
+      // Single shared pricing calculation — used identically by the live
+      // quote, the preview, the PDF, Share PDF, and WhatsApp text, since
+      // all of those simply read the categoryLines figures computed here
+      // once (nothing recalculates the tent rate a second time anywhere).
+      const { tentRateAmount: lineTentRateDisplay } =
+        computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
+
+      let lineMattressCost = 0;
+      if(mattressQty > 0){
+        const mRate = (tier === "tier1" || tier === "tier2") ? rate.mattressPeak : rate.mattress;
+        lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy OR discount/TAC
+      }
+
+      totalGrossTentRate += lineTentRateDisplay;
+      totalMattressCost += lineMattressCost;
+      totalGuestsBillable += lineGuests;
+
+      // `guests` (adults — the only per-tent headcount now that Children
+      // fields have been removed) is what pricing is based on and must
+      // not change. `displayGuests` adds the extra mattress count on
+      // top purely for what's shown to the guest — mattresses add people
+      // to the tent even though they're priced as a flat add-on, not a
+      // per-person rate.
+      // `tentRateAmount` + `mattressAmount` together equal `amount`
+      // (the total charged for the category, before any quotation-level
+      // Discount/TAC — that's applied once to the combined total below,
+      // never per category) — the split is display-only.
+      categoryLines.push({
+        category, qty,
+        guests: lineGuests,
+        displayGuests: lineGuests + mattressQty,
+        mattressQty,
+        tentRateAmount: lineTentRateDisplay,
+        mattressAmount: lineMattressCost,
+        amount: lineTentRateDisplay + lineMattressCost
+      });
     }
 
-    totalGrossTentRate += lineTentRateDisplay;
-    totalMattressCost += lineMattressCost;
-    totalGuestsBillable += lineGuests;
+    // Rann Discount/TAC — a single quotation-level adjustment applied
+    // exactly once to the combined tent/package rate across every
+    // category (never to extra mattress, never twice, never after GST).
+    const adjustmentType = $("adjustmentType").value === "tac" ? "tac" : "discount";
+    const adjustmentPercent = parseInt($("adjustmentPercent").value || 0, 10) || 0;
+    const grossTentRate = totalGrossTentRate;
+    const adjustmentAmount = grossTentRate * adjustmentPercent / 100;
+    const netTentRate = grossTentRate - adjustmentAmount;
 
-    // `guests` (adults — the only per-tent headcount now that Children
-    // fields have been removed) is what pricing is based on and must
-    // not change. `displayGuests` adds the extra mattress count on
-    // top purely for what's shown to the guest — mattresses add people
-    // to the tent even though they're priced as a flat add-on, not a
-    // per-person rate.
-    // `tentRateAmount` + `mattressAmount` together equal `amount`
-    // (the total charged for the category, before any quotation-level
-    // Discount/TAC — that's applied once to the combined total below,
-    // never per category) — the split is display-only.
-    categoryLines.push({
-      category, qty,
-      guests: lineGuests,
-      displayGuests: lineGuests + mattressQty,
-      mattressQty,
-      tentRateAmount: lineTentRateDisplay,
-      mattressAmount: lineMattressCost,
-      amount: lineTentRateDisplay + lineMattressCost
-    });
+    const rannCheckoutStr = toISODateLocal(addDaysLocal(checkin, nights));
+
+    rann = {
+      checkin, checkout: rannCheckoutStr, nights,
+      guests: totalGuestsBillable,
+      categoryLines,
+      grossTentRate, adjustmentType, adjustmentPercent, adjustmentAmount, netTentRate,
+      mattressTotal: totalMattressCost,
+      subtotal: netTentRate + totalMattressCost,
+    };
   }
 
-  // Discount/TAC — a single quotation-level adjustment applied exactly
-  // once to the combined tent/package rate across every category
-  // (never to extra mattress, never twice, never after GST).
-  const adjustmentType = $("adjustmentType").value === "tac" ? "tac" : "discount";
-  const adjustmentPercent = parseInt($("adjustmentPercent").value || 0, 10) || 0;
-  const grossTentRate = totalGrossTentRate;
-  const adjustmentAmount = grossTentRate * adjustmentPercent / 100;
-  const netTentRate = grossTentRate - adjustmentAmount;
+  // ---- Evoke Dholavira (Rann + Evoke, or Evoke only) — isolated from
+  // the Rann pricing above and carries its OWN independent Discount/TAC,
+  // never the Rann one, and never touching Rann's. ----
+  let evoke = null;
+  if(includeEvoke){
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeCheckin = getEvokeCheckinDateStr();
+    if(!evokeCheckin){
+      return fail(bookingType === "dholavira"
+        ? "Please select the Evoke Dholavira check-in date."
+        : "Please select the Rann Utsav check-in date first, so the Evoke Dholavira check-in can be calculated.");
+    }
+    if(evokeCheckin < EVOKE_SEASON_START || evokeCheckin > EVOKE_SEASON_END){
+      return fail("The Evoke Dholavira check-in date falls outside its 1 Nov 2026 – 28 Feb 2027 season — please adjust the date" + (bookingType === "rann_dholavira" ? " (Rann Utsav check-in or package length)" : "") + ".");
+    }
+    const accommodation = $("evokeAccommodation").value;
+    const rooms = parseInt($("evokeRooms").value || 0, 10);
+    if(rooms <= 0){ return fail("Please select the number of Evoke Dholavira rooms."); }
+    const singleOcc = $("evokeSingleOcc").value === "yes";
+    let mattressQty = parseInt($("evokeMattress").value || 0, 10);
+    if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
 
-  const subtotal = netTentRate + totalMattressCost; // taxable amount
+    const stay = computeEvokeStay({ accommodation, nights: evokeNights, checkinStr: evokeCheckin, rooms, singleOcc, mattressQty });
+    const evokeCheckoutStr = toISODateLocal(addDaysLocal(evokeCheckin, evokeNights));
+
+    // Evoke's own Discount/TAC — applies only to the gross accommodation
+    // total, never to Extra Mattress, and is completely independent of
+    // the Rann adjustment above (separate controls, separate state).
+    const dholaviraAdjustmentType = $("dholaviraAdjustmentType").value === "tac" ? "tac" : "discount";
+    const dholaviraAdjustmentPercent = parseInt($("dholaviraAdjustmentPercent").value || 0, 10) || 0;
+    const grossAccommodation = stay.accommodationTotal;
+    const dholaviraAdjustmentAmount = grossAccommodation * dholaviraAdjustmentPercent / 100;
+    const netAccommodation = grossAccommodation - dholaviraAdjustmentAmount;
+
+    evoke = {
+      accommodation, nights: evokeNights, rooms, singleOcc, mattressQty,
+      checkin: evokeCheckin, checkout: evokeCheckoutStr,
+      totalGuests: stay.totalGuests,
+      grossAccommodation,
+      adjustmentType: dholaviraAdjustmentType,
+      adjustmentPercent: dholaviraAdjustmentPercent,
+      adjustmentAmount: dholaviraAdjustmentAmount,
+      netAccommodation,
+      mattressTotal: stay.mattressTotal,
+      subtotal: netAccommodation + stay.mattressTotal,
+    };
+  }
+
+  // Combined taxable amount = Rann (post-discount, if included) + Evoke
+  // (post its own discount, if included) — GST applied once to the
+  // combined total, never twice, never partially.
+  const subtotal = (rann ? rann.subtotal : 0) + (evoke ? evoke.subtotal : 0);
   const gst = subtotal * 0.18;
   const net = subtotal + gst;
 
-  const checkoutDate = new Date(checkin);
-  checkoutDate.setDate(checkoutDate.getDate() + nights);
-
   lastQuote = {
-    name, checkin, nights,
-    checkout: checkoutDate.toISOString().slice(0,10),
-    guests: totalGuestsBillable,
-    grossTentRate, adjustmentType, adjustmentPercent, adjustmentAmount, netTentRate,
-    mattressTotal: totalMattressCost,
+    bookingType, name,
+    rann, evoke,
     taxableAmount: subtotal, gst, net,
-    categoryLines,
-    includeItinerary // snapshot of the state at generation time
+    includeItinerary, // snapshot of the state at generation time
   };
 
   renderQuoteCard(lastQuote);
@@ -1371,37 +1910,97 @@ function renderQuoteCard(q){
   $("quoteContent").style.display = "block";
   $("actionRow").style.display = "grid";
 
-  $("qcPackage").textContent = `Package: ${q.nights} Night${q.nights > 1 ? "s" : ""}`;
   $("rName").textContent = q.name;
-  $("rCheckin").textContent = fmtDate(q.checkin);
-  $("rCheckout").textContent = fmtDate(q.checkout);
+  $("rRannSection").hidden = !q.rann;
 
-  const catHolder = $("rCategoryLines");
-  catHolder.innerHTML = q.categoryLines.map(l => {
-    let rows =
-      `<div class="qrow"><span class="k">Tent Category</span><span class="v">${l.category}</span></div>
-       <div class="qrow"><span class="k">No. of Tents</span><span class="v">${l.qty}</span></div>
-       <div class="qrow"><span class="k">No. of Guests</span><span class="v">${l.displayGuests} Pax</span></div>
-       <div class="qrow"><span class="k">Tent Rate</span><span class="v">${fmtINR(l.tentRateAmount)}</span></div>`;
-    if(l.mattressQty > 0){
-      rows += `<div class="qrow"><span class="k">Extra Mattress (${l.mattressQty})</span><span class="v">${fmtINR(l.mattressAmount)}</span></div>`;
+  if(q.rann){
+    const r = q.rann;
+    $("qcPackage").textContent = `Package: ${r.nights} Night${r.nights > 1 ? "s" : ""}` + (q.evoke ? " + Evoke Dholavira" : "");
+    $("rCheckin").textContent = fmtDate(r.checkin);
+    $("rCheckout").textContent = fmtDate(r.checkout);
+
+    const catHolder = $("rCategoryLines");
+    catHolder.innerHTML = r.categoryLines.map(l => {
+      let rows =
+        `<div class="qrow"><span class="k">Tent Category</span><span class="v">${l.category}</span></div>
+         <div class="qrow"><span class="k">No. of Tents</span><span class="v">${l.qty}</span></div>
+         <div class="qrow"><span class="k">No. of Guests</span><span class="v">${l.displayGuests} Pax</span></div>
+         <div class="qrow"><span class="k">Tent Rate</span><span class="v">${fmtINR(l.tentRateAmount)}</span></div>`;
+      if(l.mattressQty > 0){
+        rows += `<div class="qrow"><span class="k">Extra Mattress (${l.mattressQty})</span><span class="v">${fmtINR(l.mattressAmount)}</span></div>`;
+      }
+      return rows;
+    }).join('<hr class="divider" style="margin:12px 0;">');
+
+    const discountHolder = $("rDiscountRows");
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      let rows =
+        `<div class="price-row"><span>Tent Rate</span><span class="amt">${fmtINR(r.grossTentRate)}</span></div>
+         <div class="price-row"><span>${label} (${r.adjustmentPercent}%)</span><span class="amt">-${fmtINR(r.adjustmentAmount)}</span></div>
+         <div class="price-row"><span>Tent Rate After ${label}</span><span class="amt">${fmtINR(r.netTentRate)}</span></div>`;
+      if(r.mattressTotal > 0){
+        rows += `<div class="price-row"><span>Extra Mattress</span><span class="amt">${fmtINR(r.mattressTotal)}</span></div>`;
+      }
+      rows += `<div class="price-row"><span>${q.evoke ? "Rann Utsav Subtotal" : "Taxable Amount"}</span><span class="amt">${fmtINR(q.evoke ? r.subtotal : q.taxableAmount)}</span></div>`;
+      discountHolder.innerHTML = rows;
+    } else if(q.evoke){
+      // No Rann Discount/TAC selected, but Evoke is present — still show
+      // the Rann subtotal so the two sections read clearly before the combined total.
+      discountHolder.innerHTML = `<div class="price-row"><span>Rann Utsav Subtotal</span><span class="amt">${fmtINR(r.subtotal)}</span></div>`;
+    } else {
+      discountHolder.innerHTML = "";
     }
-    return rows;
-  }).join('<hr class="divider" style="margin:12px 0;">');
+  } else {
+    $("qcPackage").textContent = "Package: Evoke Dholavira";
+  }
+
+  const evokeHolder = $("rEvokeSection");
+  if(q.evoke){
+    const e = q.evoke;
+    let rows = `<p class="qlabel">Evoke Dholavira</p>`;
+    if(!q.rann){
+      // Evoke-only: the Rann section (which normally shows dates) is
+      // hidden, so show the Evoke stay dates here instead.
+      rows += `
+        <div class="qrow"><span class="k">Check-in Date</span><span class="v">${fmtDate(e.checkin)}</span></div>
+        <div class="qrow"><span class="k">Check-out Date</span><span class="v">${fmtDate(e.checkout)}</span></div>`;
+    }
+    rows += `
+      <div class="qrow"><span class="k">Accommodation</span><span class="v">${e.accommodation}</span></div>
+      <div class="qrow"><span class="k">Stay Duration</span><span class="v">${e.nights} Night${e.nights > 1 ? "s" : ""}</span></div>
+      <div class="qrow"><span class="k">No. of Rooms</span><span class="v">${e.rooms}</span></div>
+      <div class="qrow"><span class="k">Occupancy</span><span class="v">${e.singleOcc ? "Single" : "Double"} (${e.totalGuests} Pax)</span></div>`;
+
+    // Evoke's own, independent Discount/TAC — applies only to
+    // accommodation, never to Extra Mattress. Omitted entirely at 0%.
+    if(e.adjustmentPercent > 0){
+      const eLabel = e.adjustmentType === "tac" ? "TAC" : "Discount";
+      rows += `
+        <div class="qrow"><span class="k">Evoke Accommodation</span><span class="v">${fmtINR(e.grossAccommodation)}</span></div>
+        <div class="qrow"><span class="k">${eLabel} (${e.adjustmentPercent}%)</span><span class="v">-${fmtINR(e.adjustmentAmount)}</span></div>
+        <div class="qrow"><span class="k">Accommodation After ${eLabel}</span><span class="v">${fmtINR(e.netAccommodation)}</span></div>`;
+    } else {
+      rows += `<div class="qrow"><span class="k">Accommodation Amount</span><span class="v">${fmtINR(e.grossAccommodation)}</span></div>`;
+    }
+    if(e.mattressQty > 0){
+      rows += `<div class="qrow"><span class="k">Extra Mattress (${e.mattressQty})</span><span class="v">${fmtINR(e.mattressTotal)}</span></div>`;
+    }
+    rows += `<div class="qrow"><span class="k">Evoke Dholavira Subtotal</span><span class="v">${fmtINR(e.subtotal)}</span></div>`;
+    evokeHolder.innerHTML = `<div class="qsection">${rows}</div>`;
+  } else {
+    evokeHolder.innerHTML = "";
+  }
 
   const adjustHolder = $("rAdjustmentRows");
-  if(q.adjustmentPercent > 0){
-    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
-    let rows =
-      `<div class="price-row"><span>Tent Rate</span><span class="amt">${fmtINR(q.grossTentRate)}</span></div>
-       <div class="price-row"><span>${label} (${q.adjustmentPercent}%)</span><span class="amt">-${fmtINR(q.adjustmentAmount)}</span></div>
-       <div class="price-row"><span>Tent Rate After ${label}</span><span class="amt">${fmtINR(q.netTentRate)}</span></div>`;
-    if(q.mattressTotal > 0){
-      rows += `<div class="price-row"><span>Extra Mattress</span><span class="amt">${fmtINR(q.mattressTotal)}</span></div>`;
-    }
-    rows += `<div class="price-row"><span>Taxable Amount</span><span class="amt">${fmtINR(q.taxableAmount)}</span></div>`;
-    adjustHolder.innerHTML = rows;
+  if(q.rann && q.evoke){
+    // Combined Taxable Amount only needs to appear once, at the very
+    // end, once both Rann and Evoke totals are known.
+    adjustHolder.innerHTML = `<div class="price-row"><span>Taxable Amount</span><span class="amt">${fmtINR(q.taxableAmount)}</span></div>`;
   } else {
+    // Single-section modes already end with their own running total
+    // (Rann's own Taxable Amount row, or Evoke's own Subtotal row) —
+    // nothing further to add here, exactly as before this feature.
     adjustHolder.innerHTML = "";
   }
 
@@ -1415,55 +2014,125 @@ function renderQuoteCard(q){
 function copyForWhatsApp(){
   if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
   const q = lastQuote;
+  let text;
 
-  // One blank line between every field. Each tent category is its own
-  // block (Tent Category / No. of Tents / No. of Guests / Tent Rate /
-  // Extra Mattress if any); multiple categories are shown one after
-  // another, each fully labelled — no emojis or decorative symbols.
-  const catBlocks = q.categoryLines.map(l => {
-    const lines = [
-      `Tent Category - ${l.category}`,
-      `No. of Tents - ${l.qty}`,
-      `No. of Guests - ${l.displayGuests} Pax`,
-      `Tent Rate - ${fmtINRPlain(l.tentRateAmount)}`,
-    ];
-    if(l.mattressQty > 0){
-      lines.push(`Extra Mattress (${l.mattressQty}) - ${fmtINRPlain(l.mattressAmount)}`);
-    }
-    return lines.join("\n\n");
-  }).join("\n\n\n");
+  if(q.rann){
+    // Rann-only or combined — the existing Rann quotation format is
+    // preserved exactly; a concise Evoke summary is appended only
+    // when the extension is present.
+    const r = q.rann;
+    const catBlocks = r.categoryLines.map(l => {
+      const lines = [
+        `Tent Category - ${l.category}`,
+        `No. of Tents - ${l.qty}`,
+        `No. of Guests - ${l.displayGuests} Pax`,
+        `Tent Rate - ${fmtINRPlain(l.tentRateAmount)}`,
+      ];
+      if(l.mattressQty > 0){
+        lines.push(`Extra Mattress (${l.mattressQty}) - ${fmtINRPlain(l.mattressAmount)}`);
+      }
+      return lines.join("\n\n");
+    }).join("\n\n\n");
 
-  // Discount/TAC block — omitted entirely at 0%, per spec.
-  let adjustmentBlock = "";
-  if(q.adjustmentPercent > 0){
-    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
-    adjustmentBlock =
-`Tent Rate: ${fmtINRPlain(q.grossTentRate)}
+    // Rann Discount/TAC block — omitted entirely at 0%, per spec.
+    let adjustmentBlock = "";
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      adjustmentBlock =
+`Tent Rate: ${fmtINRPlain(r.grossTentRate)}
 
-${label} (${q.adjustmentPercent}%): -${fmtINRPlain(q.adjustmentAmount)}
+${label} (${r.adjustmentPercent}%): -${fmtINRPlain(r.adjustmentAmount)}
 
-Tent Rate After ${label}: ${fmtINRPlain(q.netTentRate)}
+Tent Rate After ${label}: ${fmtINRPlain(r.netTentRate)}
 
 `;
-  }
+    }
 
-  const text =
+    // Concise Evoke Dholavira summary (combined mode only) — never the
+    // full detailed itinerary, and shows Evoke's own subtotal alongside
+    // the Rann subtotal per the "combined" WhatsApp spec.
+    let evokeBlock = "";
+    if(q.evoke){
+      const e = q.evoke;
+      evokeBlock =
+`Rann Utsav Subtotal: ${fmtINRPlain(r.subtotal)}
+
+Evoke Dholavira Extension: ${e.nights} Night${e.nights > 1 ? "s" : ""} / ${e.nights + 1} Days
+
+${e.accommodation}
+${e.rooms} Room${e.rooms > 1 ? "s" : ""}
+
+Evoke Dholavira Subtotal: ${fmtINRPlain(e.subtotal)}
+
+`;
+    }
+
+    text =
 `Rann Utsav Tent City
 
-Package ${q.nights} Night${q.nights > 1 ? "s" : ""}
+Package ${r.nights} Night${r.nights > 1 ? "s" : ""}
 
-Check in Date - ${fmtDate(q.checkin)}
+Check in Date - ${fmtDate(r.checkin)}
 
-Check out Date - ${fmtDate(q.checkout)}
+Check out Date - ${fmtDate(r.checkout)}
 
 ${catBlocks}
 
-${adjustmentBlock}GST 18% - ${fmtINRPlain(q.gst)}
+${adjustmentBlock}${evokeBlock}GST 18% - ${fmtINRPlain(q.gst)}
 
 Net Payable - ${fmtINRPlain(q.net)}
 
 Thank you for choosing Rann Utsav Tent City.
 We look forward to welcoming you for a memorable experience.`;
+
+  } else if(q.evoke){
+    // Evoke Dholavira only — no Rann information at all.
+    const e = q.evoke;
+    const label = e.adjustmentType === "tac" ? "TAC" : "Discount";
+    let adjustmentLines = "";
+    if(e.adjustmentPercent > 0){
+      adjustmentLines =
+`${label} (${e.adjustmentPercent}%):
+-${fmtINRPlain(e.adjustmentAmount)}
+
+`;
+    }
+    let mattressLines = "";
+    if(e.mattressQty > 0){
+      mattressLines =
+`Extra Mattress:
+${fmtINRPlain(e.mattressTotal)}
+
+`;
+    }
+
+    text =
+`EVOKE DHOLAVIRA
+
+Stay:
+${e.nights} Night${e.nights > 1 ? "s" : ""} / ${e.nights + 1} Days
+
+Accommodation:
+${e.accommodation}
+
+Rooms:
+${e.rooms}
+
+Gross Accommodation:
+${fmtINRPlain(e.grossAccommodation)}
+
+${adjustmentLines}${mattressLines}GST:
+${fmtINRPlain(q.gst)}
+
+Net Payable:
+${fmtINRPlain(q.net)}
+
+Thank you for choosing Evoke Dholavira.
+We look forward to welcoming you for a memorable experience.`;
+  } else {
+    setStatus("Generate a quotation first.", "warn");
+    return;
+  }
 
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text)
@@ -1561,10 +2230,21 @@ function buildQuotePdf(doc, q){
     y += 16 * valueLines.length + 7;
   }
 
+  function sectionHeading(text){
+    ensureSpace(24);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12.5);
+    setColor("setTextColor", PDF_COLORS.maroon);
+    doc.text(text, margin, y);
+    y += 20;
+  }
+
   // ---- Header band ----
   // Deep maroon band with the property name and package. Toll-free
   // number appears once, in the footer, to avoid repeating it. No
-  // GSTIN is shown, per the requested layout.
+  // GSTIN is shown, per the requested layout. Header text adapts to
+  // booking type: Rann branding for Rann-only/combined, Evoke branding
+  // for Evoke-only.
   const headerH = 96;
   setColor("setFillColor", PDF_COLORS.maroon2);
   doc.rect(0, 0, pageW, headerH, "F");
@@ -1574,47 +2254,112 @@ function buildQuotePdf(doc, q){
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   setColor("setTextColor", PDF_COLORS.white);
-  doc.text("RANN UTSAV TENT CITY", pageW / 2, 46, { align: "center" });
+  let headerTitle, headerPackage;
+  if(q.rann){
+    headerTitle = "RANN UTSAV TENT CITY";
+    headerPackage = `Package: ${q.rann.nights} Night${q.rann.nights > 1 ? "s" : ""}` + (q.evoke ? " + Evoke Dholavira" : "");
+  } else {
+    headerTitle = "EVOKE DHOLAVIRA";
+    headerPackage = `Package: ${q.evoke.nights} Night${q.evoke.nights > 1 ? "s" : ""}`;
+  }
+  doc.text(headerTitle, pageW / 2, 46, { align: "center" });
 
   doc.setFont("helvetica", "italic");
   doc.setFontSize(12);
   setColor("setTextColor", PDF_COLORS.goldSoft);
-  doc.text(`Package: ${q.nights} Night${q.nights > 1 ? "s" : ""}`, pageW / 2, 70, { align: "center" });
+  doc.text(headerPackage, pageW / 2, 70, { align: "center" });
 
   y = headerH + 3 + 34;
 
-  // ---- Guest & stay details ----
+  // ---- Guest name (always shown) ----
   labelValueRow("Guest Name", q.name, true);
-  labelValueRow("Check-in Date", fmtDate(q.checkin));
-  labelValueRow("Check-out Date", fmtDate(q.checkout));
   divider();
 
-  // ---- Category lines ----
-  q.categoryLines.forEach((l, i) => {
-    ensureSpace(110);
-    labelValueRow("Tent Category", l.category, true);
-    labelValueRow("No. of Tents", String(l.qty));
-    labelValueRow("No. of Guests", `${l.displayGuests} Pax`);
-    labelValueRow("Tent Rate", fmtINRForPdf(l.tentRateAmount), true);
-    if(l.mattressQty > 0){
-      labelValueRow(`Extra Mattress (${l.mattressQty})`, fmtINRForPdf(l.mattressAmount), true);
-    }
-    if(i < q.categoryLines.length - 1) divider();
-  });
-  divider();
-
-  // ---- Discount / TAC (only shown when a percentage was selected —
-  // keeps the PDF looking exactly as before at 0%) ----
-  if(q.adjustmentPercent > 0){
-    const label = q.adjustmentType === "tac" ? "TAC" : "Discount";
-    labelValueRow("Tent Rate", fmtINRForPdf(q.grossTentRate));
-    labelValueRow(`${label} (${q.adjustmentPercent}%)`, `-${fmtINRForPdf(q.adjustmentAmount)}`);
-    labelValueRow(`Tent Rate After ${label}`, fmtINRForPdf(q.netTentRate), true);
-    if(q.mattressTotal > 0){
-      labelValueRow("Extra Mattress", fmtINRForPdf(q.mattressTotal));
-    }
-    labelValueRow("Taxable Amount", fmtINRForPdf(q.taxableAmount), true);
+  // ---- Rann Utsav section (only when this booking includes it) ----
+  if(q.rann){
+    const r = q.rann;
+    labelValueRow("Check-in Date", fmtDate(r.checkin));
+    labelValueRow("Check-out Date", fmtDate(r.checkout));
     divider();
+
+    r.categoryLines.forEach((l, i) => {
+      ensureSpace(110);
+      labelValueRow("Tent Category", l.category, true);
+      labelValueRow("No. of Tents", String(l.qty));
+      labelValueRow("No. of Guests", `${l.displayGuests} Pax`);
+      labelValueRow("Tent Rate", fmtINRForPdf(l.tentRateAmount), true);
+      if(l.mattressQty > 0){
+        labelValueRow(`Extra Mattress (${l.mattressQty})`, fmtINRForPdf(l.mattressAmount), true);
+      }
+      if(i < r.categoryLines.length - 1) divider();
+    });
+    divider();
+
+    // Rann Discount / TAC (only shown when a percentage was selected —
+    // keeps the PDF looking exactly as before at 0%). When Evoke
+    // Dholavira is also present, this block ends with "Rann Utsav
+    // Subtotal" rather than "Taxable Amount" — the combined taxable
+    // amount is only shown once, after the Evoke section below.
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      labelValueRow("Tent Rate", fmtINRForPdf(r.grossTentRate));
+      labelValueRow(`${label} (${r.adjustmentPercent}%)`, `-${fmtINRForPdf(r.adjustmentAmount)}`);
+      labelValueRow(`Tent Rate After ${label}`, fmtINRForPdf(r.netTentRate), true);
+      if(r.mattressTotal > 0){
+        labelValueRow("Extra Mattress", fmtINRForPdf(r.mattressTotal));
+      }
+      labelValueRow(q.evoke ? "Rann Utsav Subtotal" : "Taxable Amount", fmtINRForPdf(q.evoke ? r.subtotal : q.taxableAmount), true);
+      divider();
+    } else if(q.evoke){
+      // No Rann Discount/TAC selected, but Evoke is present — still
+      // show the Rann subtotal so the two sections read clearly.
+      labelValueRow("Rann Utsav Subtotal", fmtINRForPdf(r.subtotal), true);
+      divider();
+    }
+  }
+
+  // ---- Evoke Dholavira section (only when this booking includes it) ----
+  if(q.evoke){
+    const e = q.evoke;
+    ensureSpace(120);
+    if(q.rann) sectionHeading("EVOKE DHOLAVIRA");
+    if(!q.rann){
+      // Evoke-only: no Rann section above provided the stay dates —
+      // show them here instead.
+      labelValueRow("Check-in Date", fmtDate(e.checkin));
+      labelValueRow("Check-out Date", fmtDate(e.checkout));
+    }
+    labelValueRow("Accommodation", e.accommodation, true);
+    labelValueRow("Stay Duration", `${e.nights} Night${e.nights > 1 ? "s" : ""}`);
+    labelValueRow("No. of Rooms", String(e.rooms));
+    labelValueRow("Occupancy", `${e.singleOcc ? "Single" : "Double"} (${e.totalGuests} Pax)`);
+    if(q.rann){
+      labelValueRow("Check-in Date", fmtDate(e.checkin));
+      labelValueRow("Check-out Date", fmtDate(e.checkout));
+    }
+
+    // Evoke's own, independent Discount/TAC — applies only to
+    // accommodation, never to Extra Mattress. Omitted entirely at 0%.
+    if(e.adjustmentPercent > 0){
+      const eLabel = e.adjustmentType === "tac" ? "TAC" : "Discount";
+      labelValueRow("Evoke Accommodation", fmtINRForPdf(e.grossAccommodation));
+      labelValueRow(`${eLabel} (${e.adjustmentPercent}%)`, `-${fmtINRForPdf(e.adjustmentAmount)}`);
+      labelValueRow(`Accommodation After ${eLabel}`, fmtINRForPdf(e.netAccommodation), true);
+    } else {
+      labelValueRow("Accommodation Amount", fmtINRForPdf(e.grossAccommodation), true);
+    }
+    if(e.mattressQty > 0){
+      labelValueRow(`Extra Mattress (${e.mattressQty})`, fmtINRForPdf(e.mattressTotal), true);
+    }
+    labelValueRow("Evoke Dholavira Subtotal", fmtINRForPdf(e.subtotal), true);
+    divider();
+
+    if(q.rann){
+      // Combined booking — show the combined taxable amount once,
+      // after both sections, before GST.
+      labelValueRow("Taxable Amount", fmtINRForPdf(q.taxableAmount), true);
+      divider();
+    }
   }
 
   // ---- Price summary ----
@@ -1645,14 +2390,14 @@ function buildQuotePdf(doc, q){
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   setColor("setTextColor", PDF_COLORS.maroon);
-  doc.text("RANN UTSAV TENT CITY", pageW / 2, y, { align: "center" });
+  doc.text(headerTitle, pageW / 2, y, { align: "center" });
   y += 17;
 
   doc.setFont("helvetica", "italic");
   doc.setFontSize(10.5);
   setColor("setTextColor", PDF_COLORS.inkSoft);
   const footerLines = doc.splitTextToSize(
-    "Thank you for choosing Rann Utsav Tent City. We look forward to welcoming you for a memorable experience.",
+    `Thank you for choosing ${q.rann ? "Rann Utsav Tent City" : "Evoke Dholavira"}. We look forward to welcoming you for a memorable experience.`,
     contentW
   );
   doc.text(footerLines, pageW / 2, y, { align: "center" });
@@ -1671,9 +2416,6 @@ function buildQuotePdf(doc, q){
    Reuses the same PDF_COLORS palette and page size as the quotation.
    ================================================================ */
 function addItineraryPages(doc, q){
-  const itinerary = ITINERARIES[String(q.nights)];
-  if(!itinerary) return; // defensive: never crash if package is unrecognised
-
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 56;
@@ -1682,7 +2424,6 @@ function addItineraryPages(doc, q){
   const setColor = (fn, rgb) => doc[fn](rgb[0], rgb[1], rgb[2]);
 
   let y;
-  let isFirstItineraryPage = true;
 
   // Smaller header used on continuation pages (any itinerary page
   // after the first) so the full quotation-style banner isn't repeated.
@@ -1692,48 +2433,22 @@ function addItineraryPages(doc, q){
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     setColor("setTextColor", PDF_COLORS.white);
-    doc.text("RANN UTSAV ITINERARY (CONTD.)", pageW / 2, 22, { align: "center" });
+    doc.text("ITINERARY (CONTD.)", pageW / 2, 22, { align: "center" });
     y = 34 + 26;
   }
 
   function ensureItinerarySpace(requiredHeight){
     if(y + requiredHeight > bottomLimit){
       doc.addPage();
-      isFirstItineraryPage = false;
       drawContinuationHeader();
     }
   }
 
-  // ---- First itinerary page header ----
-  doc.addPage();
-  const headerH = 84;
-  setColor("setFillColor", PDF_COLORS.maroon2);
-  doc.rect(0, 0, pageW, headerH, "F");
-  setColor("setFillColor", PDF_COLORS.gold);
-  doc.rect(0, headerH, pageW, 3, "F");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(19);
-  setColor("setTextColor", PDF_COLORS.white);
-  doc.text("RANN UTSAV ITINERARY", pageW / 2, 40, { align: "center" });
-
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(11.5);
-  setColor("setTextColor", PDF_COLORS.goldSoft);
-  doc.text(itinerary.label, pageW / 2, 62, { align: "center" });
-
-  y = headerH + 3 + 30;
-
-  itinerary.days.forEach((day, dayIndex) => {
-    // Keep a day's heading glued to its first activity line — never
-    // let a page break separate them.
+  // Draws one day's card (heading + date + timed items + note). Shared
+  // by both the Rann Utsav days and the Evoke Dholavira days below —
+  // the drawing logic itself is never duplicated between the two.
+  function drawDay(day, dateLabel, isLastInSection){
     ensureItinerarySpace(56);
-
-    let dateLabel = "";
-    if(q.checkin){
-      const dt = addDaysLocal(q.checkin, dayIndex);
-      dateLabel = fmtDateLong(dt);
-    }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
@@ -1754,7 +2469,6 @@ function addItineraryPages(doc, q){
     day.items.forEach(item => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10.5);
-      setColor("setTextColor", PDF_COLORS.maroon2);
       const timeLines = doc.splitTextToSize(item.time, 92);
 
       doc.setFont("helvetica", "normal");
@@ -1784,16 +2498,102 @@ function addItineraryPages(doc, q){
       y += 14 * noteLines.length + 6;
     }
 
-    // Divider between days (but not after the last day — that would
-    // leave a stray rule floating just above the page bottom/footer).
-    if(dayIndex < itinerary.days.length - 1){
+    if(!isLastInSection){
       ensureItinerarySpace(20);
       setColor("setDrawColor", PDF_COLORS.line);
       doc.setLineWidth(0.5);
       doc.line(margin, y, pageW - margin, y);
       y += 20;
     }
-  });
+  }
+
+  // ---- Rann Utsav itinerary pages (only when this booking includes
+  // Rann — Evoke-only bookings show only the Evoke itinerary below) ----
+  if(q.rann){
+    const r = q.rann;
+    const rannItinerary = ITINERARIES[String(r.nights)];
+    if(rannItinerary){
+      doc.addPage();
+      const headerH = 84;
+      setColor("setFillColor", PDF_COLORS.maroon2);
+      doc.rect(0, 0, pageW, headerH, "F");
+      setColor("setFillColor", PDF_COLORS.gold);
+      doc.rect(0, headerH, pageW, 3, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(19);
+      setColor("setTextColor", PDF_COLORS.white);
+      doc.text("RANN UTSAV ITINERARY", pageW / 2, 40, { align: "center" });
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(11.5);
+      setColor("setTextColor", PDF_COLORS.goldSoft);
+      doc.text(rannItinerary.label, pageW / 2, 62, { align: "center" });
+
+      y = headerH + 3 + 30;
+
+      const rannDays = getRannDays(r.nights, !!q.evoke);
+      rannDays.forEach((day, dayIndex) => {
+        const dateLabel = fmtDateLong(addDaysLocal(r.checkin, dayIndex));
+        drawDay(day, dateLabel, dayIndex === rannDays.length - 1 && !q.evoke);
+      });
+    }
+  }
+
+  // ---- Evoke Dholavira itinerary pages (Rann + Evoke, or Evoke only)
+  // — same document, native jsPDF drawing, no separate PDF ----
+  if(q.evoke){
+    const evokeItinerary = EVOKE_ITINERARIES[String(q.evoke.nights)];
+    if(evokeItinerary){
+      if(q.rann){
+        // Continuing straight on from the Rann pages above.
+        ensureItinerarySpace(70);
+        y += 6;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        setColor("setTextColor", PDF_COLORS.maroon);
+        doc.text("EVOKE DHOLAVIRA — EXTENDED STAY", margin, y);
+        y += 6;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10.5);
+        setColor("setTextColor", PDF_COLORS.inkSoft);
+        doc.text(evokeItinerary.label, margin, y + 14);
+        y += 30;
+      } else {
+        // Evoke-only booking: its own full-width header page, matching
+        // the Rann itinerary's page style (no Rann pages precede it).
+        doc.addPage();
+        const headerH = 84;
+        setColor("setFillColor", PDF_COLORS.maroon2);
+        doc.rect(0, 0, pageW, headerH, "F");
+        setColor("setFillColor", PDF_COLORS.gold);
+        doc.rect(0, headerH, pageW, 3, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(19);
+        setColor("setTextColor", PDF_COLORS.white);
+        doc.text("EVOKE DHOLAVIRA ITINERARY", pageW / 2, 40, { align: "center" });
+
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(11.5);
+        setColor("setTextColor", PDF_COLORS.goldSoft);
+        doc.text(evokeItinerary.label, pageW / 2, 62, { align: "center" });
+
+        y = headerH + 3 + 30;
+      }
+
+      // Deduplicate the archaeological sightseeing only when this is a
+      // combined booking AND the Rann stay was 3 Nights/4 Days (which
+      // already covers it) — an Evoke-only booking always gets the
+      // full Day 1, since there's no Rann Day 3 to have covered it.
+      const dedup = !!(q.rann && q.rann.nights === 3);
+      const evokeDays = getEvokeDays(q.evoke.nights, dedup);
+      evokeDays.forEach((day, dayIndex) => {
+        const dateLabel = fmtDateLong(addDaysLocal(q.evoke.checkin, dayIndex));
+        drawDay(day, dateLabel, dayIndex === evokeDays.length - 1);
+      });
+    }
+  }
 }
 
 /* ================================================================
@@ -1954,6 +2754,15 @@ function init(){
   $("checkinDate").addEventListener("change", renderItineraryPreview);
   $("nights").addEventListener("change", renderItineraryPreview);
 
+  // Booking Type selector governs which sections apply — replaces the
+  // old standalone "Include Evoke Dholavira Stay?" toggle entirely.
+  $("evokeRooms").innerHTML = numberOptionsRange(1, 10, 1);
+  $("bookingType").addEventListener("change", applyBookingType);
+  ["evokeNights","evokeAccommodation","evokeRooms","evokeSingleOcc","evokeMattress","evokeOnlyCheckin"].forEach(id=>{
+    $(id).addEventListener("change", () => { updateEvokeCheckin(); renderItineraryPreview(); });
+  });
+  $("evokeMattress").addEventListener("input", updateEvokeCheckin);
+
   // Live-refresh: once a quote exists, any change anywhere in the form
   // (guest name, package, dates, tent categories/qty, guest counts,
   // mattress, single occupancy — including fields inside dynamically
@@ -1967,7 +2776,10 @@ function init(){
   const d = new Date("2026-11-15");
   $("checkinDate").value = d.toISOString().slice(0,10);
   addLine("Non-AC Swiss Cottage");
+  bookingType = $("bookingType").value; // "rann" — matches the HTML default
+  includeEvoke = bookingType !== "rann";
   updateCheckoutAndBanner();
+  updateEvokeCheckin();
   renderItineraryPreview();
 }
 
