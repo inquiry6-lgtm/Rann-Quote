@@ -5,12 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#8F0E46">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Rann Utsav Tent City — Quotation Generator access notice.">
+<meta name="description" content="Rann Utsav Tent City — internal quotation generator.">
 <title>Rann Utsav Tent City — Quotation Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Poppins:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+  /* ============================================================
+     1. DESIGN TOKENS
+     ============================================================ */
   :root{
     --cream:#FBF3E7;
     --paper:#FEFAF3;
@@ -18,97 +22,2759 @@
     --maroon-2:#8F0E46;
     --gold:#E8A23B;
     --gold-soft:#F3C878;
+    --ink:#2B211C;
     --ink-soft:#5A4C40;
+    --line:#E7D8C2;
+    --ok:#2E6B45;
+    --ok-bg:#E4F0E7;
+    --warn:#A63B2A;
+    --warn-bg:#F3DCD4;
+
+    --font-display:'Cinzel',serif;
+    --font-script:'Cormorant Garamond',serif;
+    --font-body:'Poppins',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+
+    --radius-sm:8px;
+    --radius-md:12px;
     --radius-lg:16px;
+    --shadow-sm:0 1px 2px rgba(43,33,28,.06);
+    --shadow-md:0 8px 28px rgba(92,33,25,.12);
+
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+    --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+
+    --touch:48px;
+    --container-max:1180px;
   }
-  *{ box-sizing:border-box; }
-  html,body{
-    margin:0;
-    padding:0;
-    height:100%;
-    overflow:hidden;
-  }
+
+  /* ============================================================
+     2. RESET
+     ============================================================ */
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html,body{ margin:0; padding:0; }
   body{
-    font-family:'Poppins',sans-serif;
-    background:
-      radial-gradient(circle at 50% 0%, var(--gold-soft) 0%, transparent 45%),
-      var(--cream);
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    background: radial-gradient(1200px 500px at 10% -10%, #fff8ea55, transparent), var(--cream);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.5;
     min-height:100vh;
-    padding:6vw 5vw;
+    min-height:100dvh;
+    padding:20px 14px 56px;
+    overflow-x:hidden;
   }
-  .ann-card{
-    width:100%;
-    max-width:560px;
-    background:var(--paper);
-    border:1.5px solid var(--gold);
-    border-radius:var(--radius-lg);
-    box-shadow:0 18px 50px rgba(43,33,28,0.16);
-    padding:clamp(28px,5vw,56px) clamp(22px,6vw,52px);
-    text-align:center;
+  img,svg{max-width:100%;display:block;}
+  button{font:inherit;}
+  input,select,textarea{font:inherit;}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
   }
-  .ann-eyebrow{
-    font-family:'IBM Plex Mono',monospace, monospace;
-    font-size:11px;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--maroon);
-    margin:0 0 14px;
+
+  /* Visible focus ring for keyboard users, everywhere */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible{
+    outline:3px solid var(--maroon-2);
+    outline-offset:2px;
+    border-radius:6px;
   }
-  h1{
-    font-family:'Cinzel',serif;
-    font-weight:700;
-    color:var(--maroon-2);
-    font-size:clamp(24px,4.2vw,34px);
-    line-height:1.25;
-    margin:0 0 18px;
+
+  .visually-hidden{
+    position:absolute !important; width:1px;height:1px; padding:0;margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
-  p{
-    font-family:'Cormorant Garamond',serif;
-    font-size:clamp(17px,2.6vw,20px);
-    color:var(--ink-soft);
-    line-height:1.55;
-    margin:0 0 30px;
+
+  /* ============================================================
+     3. HEADER
+     ============================================================ */
+  .topbar{
+    max-width:var(--container-max); margin:0 auto var(--space-6);
+    display:flex; justify-content:center; text-align:center;
   }
-  .ann-divider{
-    width:64px;
-    height:2px;
-    margin:0 auto 26px;
-    background:var(--gold);
-    border-radius:2px;
+  .brand-mark{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .brand-mark .eyebrow{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--maroon-2); font-weight:700;
+    background:var(--warn-bg); border:1px solid var(--warn);
+    padding:6px 14px; border-radius:999px; display:inline-block;
   }
-  .ann-btn{
-    display:inline-block;
-    font-family:'Poppins',sans-serif;
-    font-weight:600;
-    font-size:15px;
-    letter-spacing:.03em;
-    color:var(--paper);
-    background:var(--maroon-2);
-    border:1.5px solid var(--gold);
-    border-radius:999px;
-    padding:14px 36px;
-    text-decoration:none;
-    transition:background .2s ease, transform .2s ease;
+  .brand-mark h1{
+    font-family:var(--font-display); font-size:clamp(24px,5.5vw,38px);
+    letter-spacing:.05em; margin:4px 0 0; color:var(--maroon); font-weight:700;
   }
-  .ann-btn:hover{
-    background:var(--maroon);
-    transform:translateY(-1px);
+  .brand-mark .sub{
+    font-family:var(--font-script); font-style:italic; color:var(--ink-soft);
+    font-size:clamp(14px,3vw,17px); margin-top:4px; padding:0 8px;
   }
-  @media (max-width:480px){
-    .ann-card{ padding:32px 22px; }
+  .dune{
+    max-width:var(--container-max); margin:0 auto 26px; height:10px; border-radius:2px;
+    background: linear-gradient(135deg, var(--gold-soft) 25%, transparent 25%) 0 0/16px 16px,
+                linear-gradient(225deg, var(--gold-soft) 25%, transparent 25%) 0 0/16px 16px;
+    opacity:.75;
+  }
+
+  /* ============================================================
+     4. LAYOUT
+     ============================================================ */
+  .wrap{
+    max-width:var(--container-max); margin:0 auto;
+    display:grid; grid-template-columns:1fr; gap:22px; align-items:start;
+  }
+  @media (min-width:900px){
+    .wrap{ grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap:26px; }
+  }
+
+  .panel{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:20px 18px 24px; box-shadow:var(--shadow-sm); min-width:0;
+  }
+  @media (min-width:560px){ .panel{ padding:24px 24px 28px; } }
+
+  .panel h2{
+    font-family:var(--font-display); font-size:14px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--maroon); margin:0 0 18px; padding-bottom:10px; border-bottom:1px solid var(--line);
+  }
+
+  /* ============================================================
+     5. FORM CONTROLS
+     ============================================================ */
+  .grid2{ display:grid; grid-template-columns:1fr; gap:0 14px; }
+  @media (min-width:480px){ .grid2{ grid-template-columns:1fr 1fr; } }
+  .row2{ display:grid; grid-template-columns:1fr; gap:0 12px; }
+  @media (min-width:480px){ .row2{ grid-template-columns:1fr 1fr; } }
+  .row3{ display:grid; grid-template-columns:1fr; gap:0 12px; }
+  @media (min-width:560px){ .row3{ grid-template-columns:1fr 1fr 1fr; } }
+
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; min-width:0; }
+  .field.span2{ grid-column:1/-1; }
+
+  label{
+    font-size:11.5px; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .label-hint{ text-transform:none; font-weight:400; letter-spacing:0; opacity:.8; }
+
+  input, select{
+    font-family:var(--font-body); font-size:16px; /* 16px avoids iOS auto-zoom */
+    padding:12px 12px; min-height:var(--touch);
+    border:1px solid var(--line); border-radius:var(--radius-sm);
+    background:#fff; color:var(--ink); outline:none; width:100%;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  input:hover, select:hover{ border-color:#D9C39C; }
+  input:focus, select:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,134,59,.18); }
+  input:disabled{ background:#F5EFE3; color:var(--ink-soft); cursor:not-allowed; }
+  input::placeholder{ color:#B9A98F; }
+  select{ cursor:pointer; }
+
+  .hint{ font-size:12.5px; color:var(--ink-soft); margin-top:-8px; margin-bottom:12px; }
+  .divider{ height:1px; background:var(--line); margin:18px 0; border:0; }
+
+  .banner{
+    font-size:13px; line-height:1.5; padding:10px 13px; border-radius:var(--radius-sm);
+    margin:4px 0 14px; display:none; border:1px solid transparent;
+  }
+  .banner.show{ display:flex; gap:8px; align-items:flex-start; }
+  .peak-banner{ background:#F1E6CF; color:var(--maroon-2); border-color:var(--gold-soft); }
+  .peak-banner.tier2{ background:var(--warn-bg); border-color:var(--warn); color:var(--warn); }
+  .warn-box{ background:var(--warn-bg); color:var(--warn); border-color:var(--warn); }
+
+  /* ============================================================
+     6. BUTTONS
+     ============================================================ */
+  .btn{
+    font-family:var(--font-body); font-weight:600; font-size:14.5px;
+    padding:13px 20px; min-height:var(--touch); border-radius:var(--radius-sm);
+    border:1px solid transparent; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, opacity .12s ease, background-color .15s ease, box-shadow .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{ transform:scale(.98); }
+  .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+  .btn-primary{ background:var(--maroon); color:#fff; width:100%; box-shadow:0 4px 14px rgba(196,20,95,.25); }
+  .btn-primary:hover{ background:var(--maroon-2); }
+
+  .btn-outline{ background:transparent; border-color:var(--maroon); color:var(--maroon); }
+  .btn-outline:hover{ background:var(--maroon); color:#fff; }
+
+  .btn-gold{ background:var(--gold); color:#fff; }
+  .btn-gold:hover{ background:#D6912E; }
+
+  .btn-ghost{ background:transparent; border:1px dashed var(--gold); color:var(--maroon-2); width:100%; }
+  .btn-ghost:hover{ background:#F1E6CF; }
+
+  .btn-remove{
+    background:transparent; border:1px solid var(--warn); color:var(--warn);
+    font-size:12.5px; padding:8px 12px; min-height:40px; border-radius:7px; white-space:nowrap;
+  }
+  .btn-remove:hover{ background:var(--warn); color:#fff; }
+
+  .action-row{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:16px; }
+  @media (min-width:420px){ .action-row{ grid-template-columns:1fr 1fr; } }
+
+  /* ============================================================
+     7. TENT CATEGORY LINE ITEMS
+     ============================================================ */
+  .tent-line{
+    border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px; margin-bottom:14px; background:#fffdf8; min-width:0;
+  }
+  .tent-line-head{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:10px;
+  }
+  .tent-line-head .field{ margin-bottom:0; flex:1 1 160px; min-width:140px; }
+  .tent-line-head .btn-remove{ flex:0 0 auto; }
+
+  .line-index-tag{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:8px; font-weight:600;
+  }
+  .tent-instances{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  .tent-instance{
+    background:var(--cream); border:1px solid var(--line); border-radius:9px; padding:12px; min-width:0;
+  }
+  .tent-instance .ti-title{ font-size:12px; font-weight:700; color:var(--maroon-2); margin-bottom:8px; }
+  #addLineBtn{ margin-top:2px; }
+
+  /* ============================================================
+     8. QUOTE CARD
+     ============================================================ */
+  .quote-shell{ min-width:0; }
+  @media (min-width:900px){ .quote-shell{ position:sticky; top:20px; } }
+
+  .quote-card{
+    background:var(--paper); border-radius:var(--radius-lg); position:relative;
+    overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow-md);
+    width:100%; max-width:100%; min-width:0;
+    animation:card-in .35s ease both;
+  }
+  @keyframes card-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+  .motif{
+    height:14px;
+    background-image: linear-gradient(135deg, var(--gold) 25%, transparent 25%),
+                       linear-gradient(225deg, var(--gold) 25%, transparent 25%),
+                       linear-gradient(45deg, var(--gold) 25%, transparent 25%),
+                       linear-gradient(315deg, var(--gold) 25%, transparent 25%);
+    background-position: 9px 0, 9px 0, 0 0, 0 0; background-size: 18px 18px; background-repeat: repeat-x; opacity:.9;
+  }
+  .quote-head{
+    background:linear-gradient(180deg,var(--maroon) 0%, var(--maroon-2) 100%); color:#F6EEDD;
+    padding:24px 20px 18px; text-align:center; position:relative;
+  }
+  .quote-head .camel{ position:absolute; right:16px; top:14px; opacity:.35; font-size:22px; }
+  .quote-head .name{
+    font-family:var(--font-display); font-size:clamp(17px,4vw,20px); letter-spacing:.1em; margin:0;
+    word-break:break-word;
+  }
+  .quote-head .pkg{ font-family:var(--font-script); font-style:italic; font-size:15.5px; color:var(--gold-soft); margin-top:6px; }
+
+  .quote-body{ padding:22px 18px 8px; }
+  @media (min-width:480px){ .quote-body{ padding:26px 28px 10px; } }
+
+  .qsection{ margin-bottom:20px; }
+  .qsection .qlabel{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); margin:0 0 10px;
+  }
+  .qrow{
+    display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:6px 0;
+    color:var(--ink); flex-wrap:wrap; line-height:1.4;
+  }
+  .qrow .k{ color:var(--ink-soft); flex-shrink:0; }
+  .qrow .v{ font-weight:600; text-align:right; word-break:break-word; overflow-wrap:anywhere; min-width:0; }
+
+  .price-table{ border-top:1px dashed var(--line); border-bottom:1px dashed var(--line); padding:16px 0; margin:8px 0 4px; }
+  .price-row{ display:flex; justify-content:space-between; gap:10px; font-size:14.5px; padding:7px 0; }
+  .price-row .amt{ font-family:var(--font-mono); font-weight:600; text-align:right; word-break:break-word; }
+  .price-row.net{
+    font-size:clamp(17px,4vw,19px); font-weight:700; color:var(--maroon);
+    border-top:1px solid var(--line); margin-top:10px; padding:14px 12px;
+    background:linear-gradient(90deg, rgba(196,20,95,.06), rgba(232,162,59,.06));
+    border-radius:var(--radius-sm);
+  }
+  .price-row.net .amt{ font-family:var(--font-mono); font-weight:700; }
+
+  .quote-foot{
+    text-align:center; padding:16px 18px 24px; font-family:var(--font-script); font-style:italic;
+    color:var(--ink-soft); font-size:14px; border-top:1px solid var(--line);
+  }
+  .quote-foot b{ color:var(--maroon); font-style:normal; }
+
+  .empty-note{
+    padding:44px 22px; text-align:center; color:var(--ink-soft);
+    font-family:var(--font-script); font-style:italic; font-size:16px;
+  }
+
+  /* ============================================================
+     9. STATUS MESSAGES
+     ============================================================ */
+  .status{
+    font-size:13px; text-align:center; margin-top:10px; min-height:20px;
+    padding:0 8px; word-break:break-word;
+  }
+  .status.status-ok{ color:var(--ok); }
+  .status.status-warn{ color:var(--warn); }
+
+  footer.credit{
+    text-align:center; color:var(--ink-soft); font-size:11.5px; margin-top:32px;
+    letter-spacing:.03em; padding:0 12px;
+  }
+
+  /* ============================================================
+     10. ITINERARY (new)
+     ============================================================ */
+  .itinerary-toggle-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    flex-wrap:wrap; padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius-md);
+    background:#fffdf8; margin:6px 0 4px;
+  }
+  .itinerary-toggle-row .itlabel{ display:flex; flex-direction:column; gap:2px; }
+  .itinerary-toggle-row .itlabel .ittitle{
+    font-family:var(--font-display); font-size:12.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--maroon); font-weight:700;
+  }
+  .itinerary-toggle-row .itlabel .itsub{ font-size:12px; color:var(--ink-soft); }
+
+  .discount-section{
+    padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius-md);
+    background:#fffdf8; margin:6px 0 4px;
+  }
+  .discount-section .discount-heading{
+    margin:0 0 12px; font-family:var(--font-display); font-size:12.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--maroon); font-weight:700;
+  }
+
+  /* Accessible Yes/No switch built from a real checkbox input so it's
+     keyboard operable and has a proper accessible name via <label>. */
+  .switch{ position:relative; display:inline-flex; align-items:center; gap:10px; cursor:pointer; min-height:var(--touch); }
+  .switch input{
+    position:absolute; opacity:0; width:44px; height:26px; margin:0; cursor:pointer;
+  }
+  .switch .track{
+    width:44px; height:26px; border-radius:999px; background:var(--line);
+    position:relative; transition:background-color .15s ease; flex-shrink:0;
+  }
+  .switch .track::after{
+    content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s ease;
+  }
+  .switch input:checked + .track{ background:var(--maroon); }
+  .switch input:checked + .track::after{ transform:translateX(18px); }
+  .switch input:focus-visible + .track{ outline:3px solid var(--maroon-2); outline-offset:2px; }
+  .switch .switch-state{ font-size:13px; font-weight:600; color:var(--ink-soft); min-width:28px; }
+  .switch input:checked ~ .switch-state{ color:var(--maroon); }
+
+  #itineraryPreview{ margin-top:14px; }
+  #itineraryPreview[hidden]{ display:none !important; margin:0; }
+
+  .itin-day-card{
+    border:1px solid var(--line); border-radius:var(--radius-md); background:#fffdf8;
+    padding:14px 16px; margin-bottom:12px;
+  }
+  .itin-day-head{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;
+    margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed var(--line);
+  }
+  .itin-day-head .itin-day-title{
+    font-family:var(--font-display); font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--maroon);
+  }
+  .itin-day-head .itin-day-date{ font-family:var(--font-mono); font-size:12.5px; color:var(--gold); font-weight:600; }
+  .itin-item{ display:flex; gap:10px; padding:6px 0; align-items:flex-start; }
+  .itin-item .itin-time{
+    font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--maroon-2);
+    white-space:nowrap; flex-shrink:0; padding-top:1px;
+  }
+  .itin-item .itin-activity{ font-size:13.5px; color:var(--ink); line-height:1.45; }
+  .itin-note{
+    font-family:var(--font-script); font-style:italic; font-size:12.5px; color:var(--warn);
+    margin-top:6px; padding-top:6px; border-top:1px dashed var(--line);
+  }
+
+  /* ============================================================
+     11. PRINT — dedicated PDF/print output
+     ============================================================ */
+  @media print{
+    @page{ size:A4 portrait; margin:12mm; }
+    html,body{ background:#fff !important; padding:0 !important; margin:0 !important; }
+    body *{ visibility:hidden; }
+    #quoteCard, #quoteCard *{ visibility:visible; }
+    #quoteCard{
+      position:absolute; inset:0; margin:0 auto; width:100% !important; max-width:100% !important;
+      border:none !important; box-shadow:none !important; border-radius:0 !important;
+      animation:none !important;
+    }
+    .quote-shell{ position:static !important; }
+    .no-print{ display:none !important; }
+    a[href]::after{ content:""; }
   }
 </style>
 </head>
 <body>
-  <div class="ann-card" role="dialog" aria-label="Announcement">
-    <p class="ann-eyebrow">Notice</p>
-    <h1>This Tool Is No Longer Free</h1>
-    <div class="ann-divider"></div>
-    <p>The quotation generator is currently available for authorized users only.<br>To get access, please contact the owner.</p>
-    <a class="ann-btn" href="mailto:ompatell.171@gmail.com?subject=Access%20Request%20%E2%80%94%20Quotation%20Generator&body=Hello%2C%20I%20would%20like%20to%20get%20access%20to%20the%20quotation%20generator.">Contact Owner</a>
-  </div>
+
+  <header class="topbar">
+    <div class="brand-mark">
+      <p class="eyebrow">Internal Tool · Not for Guest Circulation</p>
+      <h1>Rann Utsav Tent City</h1>
+      <p class="sub">Quotation Generator — Season 1 Nov 2026 – 7 Mar 2027</p>
+    </div>
+  </header>
+  <div class="dune" role="presentation"></div>
+
+  <main class="wrap">
+
+    <!-- ============================================================
+         FORM PANEL
+         ============================================================ -->
+    <section class="panel" aria-labelledby="formHeading">
+      <h2 id="formHeading">Guest &amp; Stay Details</h2>
+
+      <form id="quoteForm" novalidate>
+        <div class="grid2">
+          <div class="field span2">
+            <label for="guestName">Guest Name</label>
+            <input id="guestName" name="guestName" type="text" placeholder="e.g. Om Patel" autocomplete="name" required aria-required="true">
+          </div>
+          <div class="field">
+            <label for="contactNumber">Contact Number</label>
+            <input id="contactNumber" name="contactNumber" type="tel" placeholder="Optional" autocomplete="tel" inputmode="tel">
+          </div>
+          <div class="field">
+            <label for="bookingType">Booking Type</label>
+            <select id="bookingType" name="bookingType">
+              <option value="rann" selected>Rann Utsav – Tent City Only</option>
+              <option value="rann_dholavira">Rann Utsav + Evoke Dholavira</option>
+              <option value="dholavira">Evoke Dholavira Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="rannSection">
+          <div class="field">
+            <label for="nights">Select Package</label>
+            <select id="nights" name="nights">
+              <option value="1">1 Night / 2 Days</option>
+              <option value="2">2 Nights / 3 Days</option>
+              <option value="3">3 Nights / 4 Days</option>
+            </select>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label for="checkinDate">Check-In</label>
+              <input id="checkinDate" name="checkinDate" type="date" min="2026-11-01" max="2027-03-07" required aria-required="true">
+            </div>
+            <div class="field">
+              <label for="checkoutDate">Check-Out</label>
+              <input id="checkoutDate" name="checkoutDate" type="text" disabled placeholder="Auto-calculated" aria-live="polite">
+            </div>
+          </div>
+
+          <div id="dateWarn" class="banner warn-box" role="alert"></div>
+          <div id="peakBanner" class="banner peak-banner" role="status"></div>
+
+          <div class="field">
+            <label for="peakOverride">Peak Date Charge</label>
+            <select id="peakOverride" name="peakOverride">
+              <option value="auto">Auto-detect from date</option>
+              <option value="none">No additional charge</option>
+              <option value="tier1">Standard Peak (Tier 1)</option>
+              <option value="tier2">Christmas / High Peak (Tier 2)</option>
+            </select>
+          </div>
+
+          <hr class="divider">
+
+          <div id="linesContainer"></div>
+          <button class="btn btn-ghost" id="addLineBtn" type="button">+ Add Another Tent Category</button>
+
+          <hr class="divider">
+
+          <!-- DISCOUNT / TAC (Rann) -->
+          <div class="discount-section">
+            <p class="discount-heading">Discount / TAC</p>
+            <div class="row2">
+              <div class="field">
+                <label for="adjustmentType">Adjustment Type</label>
+                <select id="adjustmentType" name="adjustmentType">
+                  <option value="discount" selected>Discount</option>
+                  <option value="tac">TAC</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="adjustmentPercent">Percentage</label>
+                <select id="adjustmentPercent" name="adjustmentPercent">
+                  <option value="0" selected>0% — No Discount</option>
+                  <option value="5">5%</option>
+                  <option value="10">10%</option>
+                  <option value="15">15%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" id="rannEvokeDivider">
+
+        <!-- EVOKE DHOLAVIRA -->
+        <div id="evokeSection" hidden>
+          <p class="discount-heading" style="margin:0 0 12px;">Evoke Dholavira</p>
+
+          <div class="row2">
+            <div class="field">
+              <label for="evokeNights">Dholavira Stay</label>
+              <select id="evokeNights" name="evokeNights">
+                <option value="1">1 Night / 2 Days</option>
+                <option value="2">2 Nights / 3 Days</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="evokeCheckinLabel" for="evokeCheckinDisplay">Dholavira Check-in (auto)</label>
+              <input id="evokeCheckinDisplay" type="text" disabled placeholder="Calculated from Rann checkout">
+              <input id="evokeOnlyCheckin" type="date" min="2026-11-01" max="2027-02-28" hidden>
+            </div>
+          </div>
+
+          <div id="evokeSeasonWarn" class="banner warn-box" role="alert"></div>
+
+          <div id="evokeControls">
+            <div class="row2">
+              <div class="field">
+                <label for="evokeAccommodation">Accommodation</label>
+                <select id="evokeAccommodation" name="evokeAccommodation">
+                  <option value="Premium Cottage">Premium Cottage</option>
+                  <option value="Deluxe Tent">Deluxe Tent</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="evokeRooms">No. of Rooms</label>
+                <select id="evokeRooms" name="evokeRooms"></select>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="evokeSingleOcc">Single Occupancy</label>
+                <select id="evokeSingleOcc" name="evokeSingleOcc">
+                  <option value="no">No</option>
+                  <option value="yes">Yes — 75% of Double Occupancy Cost</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="evokeMattress">Extra Mattress Quantity</label>
+                <input id="evokeMattress" type="number" min="0" value="0" inputmode="numeric">
+              </div>
+            </div>
+
+            <p class="itsub" id="evokeJourneyTotal" style="margin:2px 0 10px;"></p>
+
+            <!-- EVOKE DISCOUNT / TAC — independent from Rann's -->
+            <div class="discount-section">
+              <p class="discount-heading">Evoke Discount / TAC</p>
+              <div class="row2">
+                <div class="field">
+                  <label for="dholaviraAdjustmentType">Adjustment Type</label>
+                  <select id="dholaviraAdjustmentType" name="dholaviraAdjustmentType">
+                    <option value="discount" selected>Discount</option>
+                    <option value="tac">TAC</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="dholaviraAdjustmentPercent">Percentage</label>
+                  <select id="dholaviraAdjustmentPercent" name="dholaviraAdjustmentPercent">
+                    <option value="0" selected>0%</option>
+                    <option value="5">5%</option>
+                    <option value="10">10%</option>
+                    <option value="15">15%</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- PDF ITINERARY OPTION -->
+        <div class="itinerary-toggle-row">
+          <div class="itlabel">
+            <span class="ittitle">PDF Itinerary Option</span>
+            <label class="itsub" for="includeItinerary" id="includeItineraryLabel">Include Itinerary in PDF?</label>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="includeItinerary" role="switch" aria-labelledby="includeItineraryLabel" aria-checked="false">
+            <span class="track" aria-hidden="true"></span>
+            <span class="switch-state" id="includeItineraryState">No</span>
+          </label>
+        </div>
+        <div id="itineraryPreview" hidden aria-live="polite"></div>
+
+        <hr class="divider">
+
+        <button class="btn btn-primary" id="generateBtn" type="submit">Generate Quotation</button>
+      </form>
+    </section>
+
+    <!-- ============================================================
+         QUOTE PANEL
+         ============================================================ -->
+    <div class="quote-shell">
+      <div class="quote-card" id="quoteCard" aria-live="polite">
+        <div class="motif" role="presentation"></div>
+        <p class="empty-note" id="emptyNote">
+          Fill in the guest and stay details, then select <b>Generate Quotation</b> — your premium, WhatsApp-ready quote will appear here.
+        </p>
+        <div id="quoteContent" style="display:none;">
+          <div class="quote-head">
+            <span class="camel" aria-hidden="true">🐫</span>
+            <p class="name" id="qcName">RANN UTSAV TENT CITY</p>
+            <p class="pkg" id="qcPackage">Package: 2 Nights</p>
+          </div>
+          <div class="quote-body">
+            <div class="qsection">
+              <p class="qlabel">Guest Details</p>
+              <div class="qrow"><span class="k">Guest Name</span><span class="v" id="rName">—</span></div>
+            </div>
+            <div id="rRannSection">
+              <div class="qsection">
+                <p class="qlabel">Stay Details</p>
+                <div class="qrow"><span class="k">Check-in Date</span><span class="v" id="rCheckin">—</span></div>
+                <div class="qrow"><span class="k">Check-out Date</span><span class="v" id="rCheckout">—</span></div>
+              </div>
+              <div class="qsection">
+                <p class="qlabel">Tent Details</p>
+                <div id="rCategoryLines"></div>
+              </div>
+              <div id="rDiscountRows"></div>
+            </div>
+            <div id="rEvokeSection"></div>
+            <div class="price-table">
+              <div id="rAdjustmentRows"></div>
+              <div class="price-row"><span>GST (18%)</span><span class="amt" id="rGST">₹0</span></div>
+              <div class="price-row net"><span>Net Payable</span><span class="amt" id="rNet">₹0</span></div>
+            </div>
+          </div>
+          <div class="quote-foot">
+            Thank you for choosing <b>Rann Utsav Tent City</b>.<br>
+            We look forward to welcoming you for a memorable experience.
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row no-print" id="actionRow" style="display:none;">
+        <button class="btn btn-gold" id="copyBtn" type="button">Copy for WhatsApp</button>
+        <button class="btn btn-outline" id="pdfBtn" type="button">Download PDF</button>
+        <button class="btn btn-outline" id="shareBtn" type="button">📤 Share PDF</button>
+      </div>
+      <p class="status" id="statusMsg" role="status" aria-live="polite"></p>
+    </div>
+
+  </main>
+
+  <footer class="credit">Rates and peak-date tariffs applied as per the current season rate card.</footer>
+
+<script>
+'use strict';
+
+/* ================================================================
+   CONFIGURATION — RATE CARD
+   Business logic and figures below are unchanged from the source
+   tool. Do not edit values here without sign-off from Reservations.
+   ================================================================ */
+const RATES = {
+  "Super Premium Tent":      {1:10300, 2:20600, 3:30900, mattress:5500, mattressPeak:6000, flat:false, baseCapacity:2, maxMattress:20},
+  "Premium Tent":            {1:9300,  2:18600, 3:27900, mattress:5500, mattressPeak:6000, flat:false, baseCapacity:2, maxMattress:20},
+  "Deluxe AC Swiss Cottage": {1:8300,  2:16600, 3:24900, mattress:5500, mattressPeak:6000, flat:false, baseCapacity:2, maxMattress:20},
+  "Non-AC Swiss Cottage":    {1:6300,  2:12600, 3:18900, mattress:4500, mattressPeak:5000, flat:false, baseCapacity:2, maxMattress:20},
+  "Darbari Suite":           {1:70000, 2:140000,3:210000,mattress:7750, mattressPeak:7750, flat:true, capacity:4, maxMattress:20},
+  "Rajwadi Suite":           {1:35000, 2:70000, 3:105000,mattress:7750, mattressPeak:7750, flat:true, capacity:2, maxMattress:20},
+};
+const CATEGORY_LABELS = Object.keys(RATES);
+
+// Single place to change the extra-mattress ceiling for every category.
+// (Each category's own `maxMattress` above is left in place in case a
+// future rate card ever needs a per-category limit again, but today
+// they all point at this one constant.)
+const MAX_EXTRA_MATTRESS = 20;
+CATEGORY_LABELS.forEach(c => { RATES[c].maxMattress = MAX_EXTRA_MATTRESS; });
+
+// Single place to change the default number of tents for a newly
+// created (or freshly loaded) tent-category line.
+const DEFAULT_TENT_QTY = 1;
+
+const ADDITIONAL = { tier1:{1:2000,2:3500,3:4500}, tier2:{1:4000,2:6000,3:8000} };
+
+const SEASON_START = "2026-11-01";
+const SEASON_END   = "2027-03-07";
+
+const CHRISTMAS = [["2026-12-18","2027-01-02"]];
+// Dates that get TIER 2 rates besides the Christmas window. January
+// Full Moon (20-23 Jan 2027) uses the existing Tier 2 rates — not a
+// new/duplicated rate, just the same ADDITIONAL.tier2 values applied
+// via this extra date range.
+const TIER2_SPECIFIC = [
+  ["2027-01-20","2027-01-23"], // January Full Moon — Tier 2 rates apply
+];
+const TIER1_SPECIFIC = [
+  ["2026-11-08","2026-11-14"],
+  ["2026-11-22","2026-11-25"],
+  ["2026-11-09","2026-11-09"],
+  ["2027-02-18","2027-02-21"],
+  ["2027-02-06","2027-02-06"],
+];
+// Every December 2026 / January 2027 date that isn't already covered
+// by CHRISTMAS or TIER2_SPECIFIC above is Tier 1 — there is no
+// "normal/base rate" date in either month. Checked after the Tier 2
+// windows (see detectPeakTier), so 18 Dec-2 Jan and 20-23 Jan are
+// correctly claimed by Tier 2 first and never fall through to here.
+const TIER1_SEASON = [
+  ["2026-12-01","2026-12-17"],
+  ["2027-01-03","2027-01-19"],
+  ["2027-01-24","2027-01-31"],
+];
+
+/* ================================================================
+   CONFIGURATION — ITINERARY CONTENT
+   All itinerary text lives here, once, keyed by package length.
+   PDF, on-screen preview, and any future surface all read from this
+   single constant — nothing is duplicated per output format.
+   ================================================================ */
+// Shared building blocks — reused verbatim across packages instead of
+// being retyped per package, so there is exactly one place to edit
+// each recurring day's content.
+
+// Detailed arrival day — identical for all three packages.
+const COMMON_DAY_1_ITEMS = [
+  { time: "12:30 PM onwards", activity: "Arrival at Rann Utsav – The Tent City, Dhordo from Bhuj. Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the respective dining area." },
+  { time: "02:30 PM – 04:30 PM", activity: "Leisure time. Guests may enjoy an exciting range of activities at Skyzilla, Club House, Craft Market/Haat, various selfie points, Rejuvenation Centre, Art Gallery, live demonstration area of Kutch crafts and other available activities." },
+  { time: "04:00 PM – 05:00 PM", activity: "Hi-tea at the respective dining area." },
+  { time: "05:00 PM – 07:00 PM", activity: "Visit Sunset Point and the breathtaking White Rann to witness the grandeur of the setting sun. Transfers may be arranged by bus, camel cart or a combination as applicable." },
+  { time: "07:00 PM – 07:30 PM", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
+  { time: "07:30 PM – 10:00 PM", activity: "Enjoy dinner at the respective dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Enjoy the culture of Kutch along with entertaining activities at the cultural activity area." },
+];
+
+// Sunrise Point + Kala Dungar / Gandhi Nu Gaam day — identical for the
+// 2 Nights/3 Days and 3 Nights/4 Days packages (their Day 2).
+const SUNRISE_KALADUNGAR_ITEMS = [
+  { time: "06:00 AM – 06:30 AM", activity: "Morning Tea and departure for Sunrise Point." },
+  { time: "06:30 AM – 07:30 AM", activity: "Visit the Sunrise Point at the White Desert." },
+  { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+  { time: "10:00 AM – 12:30 PM", activity: "Leisure time. Guests may enjoy activities at Skyzilla, Club House, Craft Market/Haat, various selfie points, Rejuvenation Centre, Art Gallery, live demonstrations of Kutch crafts and other available activities." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy lunch at the respective dining area." },
+  { time: "02:30 PM – 03:00 PM", activity: "Departure for Kala Dungar." },
+  { time: "03:00 PM – 07:30 PM", activity: "Visit Kala Dungar and Gandhi Nu Gaam, followed by return to Rann Utsav – The Tent City, Dhordo." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the respective dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Enjoy cultural activities and entertainment at the cultural activity area." },
+];
+
+// Final checkout-day morning — identical across all three packages
+// (Day 2 of 1N/2D, Day 3 of 2N/3D, Day 4 of 3N/4D).
+const CHECKOUT_ITEMS = [
+  { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+  { time: "06:30 AM – 07:30 AM", activity: "Yoga session at the dedicated area." },
+  { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+  { time: "09:30 AM onwards", activity: "Check-out from Rann Utsav – The Tent City, Dhordo, followed by complimentary sightseeing of Shree Swaminarayan Temple and Kutch Museum." },
+];
+const CHECKOUT_NOTE = "Kutch Museum remains closed every Wednesday.";
+
+// Dholavira via Road Through Heaven — unique to Day 3 of the 3 Nights /
+// 4 Days package.
+const DHOLAVIRA_ITEMS = [
+  { time: "01:30 PM – 02:00 PM", activity: "Departure for Dholavira via Road Through Heaven. Approximate distance: 105 km, with around two hours of travel." },
+  { time: "03:30 PM – 05:30 PM", activity: "Visit the Archaeological Museum and Dholavira Excavation Site." },
+  { time: "06:00 PM – 06:45 PM", activity: "Drive through the Road Through Heaven as the evening sky displays vibrant colours." },
+  { time: "08:00 PM – 08:30 PM", activity: "Return to Rann Utsav – The Tent City, Dhordo." },
+];
+const DHOLAVIRA_NOTE = "The Archaeological Museum remains closed every Friday.";
+
+const ITINERARIES = {
+  "1": {
+    label: "1 Night / 2 Days",
+    days: [
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
+    ],
+  },
+  "2": {
+    label: "2 Nights / 3 Days",
+    days: [
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: SUNRISE_KALADUNGAR_ITEMS },
+      { title: "Day 3", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
+    ],
+  },
+  "3": {
+    label: "3 Nights / 4 Days",
+    days: [
+      { title: "Day 1", items: COMMON_DAY_1_ITEMS },
+      { title: "Day 2", items: SUNRISE_KALADUNGAR_ITEMS },
+      { title: "Day 3", items: DHOLAVIRA_ITEMS, note: DHOLAVIRA_NOTE },
+      { title: "Day 4", items: CHECKOUT_ITEMS, note: CHECKOUT_NOTE },
+    ],
+  },
+};
+
+/* ================================================================
+   EVOKE DHOLAVIRA EXTENSION — isolated module
+   Deliberately kept separate from the Rann RATES/ADDITIONAL/tier
+   engine above: its own rate table, its own date-tier windows, its
+   own per-night calculation function. The only things it reuses are
+   generic date-safety helpers (parseLocalDate/addDaysLocal/inRange)
+   that have nothing Rann-specific about them.
+   ================================================================ */
+const EVOKE_SEASON_START = "2026-11-01";
+const EVOKE_SEASON_END   = "2027-02-28";
+
+const EVOKE_RATES = {
+  "Premium Cottage": { base: 7900 },
+  "Deluxe Tent":      { base: 7100 },
+  mattressBase: 4500,
+};
+
+// Evoke Dholavira's rupee amounts per tier — these ARE specific to
+// Dholavira (different from Rann's ADDITIONAL rates). What counts as
+// Tier 1 vs Tier 2 in the first place, however, is NOT duplicated
+// here — see getEvokeRateForDate() below, which reuses Dhordo Tent
+// City's own detectPeakTier() so the two properties can never drift
+// out of sync on which calendar dates are peak.
+const EVOKE_LEVEL1_RATE = { supplement: 1500, mattressRate: 5000 };
+const EVOKE_LEVEL2_RATE = { supplement: 3000, mattressRate: 5500 };
+
+/* Classifies a single calendar night for Evoke Dholavira pricing by
+   reusing the exact same Tier 1 / Tier 2 date classification as Rann
+   Utsav — The Tent City, Dhordo (detectPeakTier(), and the underlying
+   CHRISTMAS / TIER1_SPECIFIC / TIER1_SEASON / TIER2_SPECIFIC date
+   windows it checks). Evoke Dholavira applies its own rupee amounts
+   per tier, but which calendar dates COUNT as Tier 1 or Tier 2 is
+   identical to Dhordo — never a separately-maintained copy that could
+   drift out of sync (this previously omitted the Nov/Feb Dark Moon
+   dates, which Dhordo's Tier 1 already includes).
+   Called once per night of the stay (never once for the whole stay),
+   per the tariff's own per-night structure. Shared by the live quote,
+   the PDF, and Share PDF — nothing recalculates this independently. */
+function getEvokeRateForDate(dateStr){
+  const tier = detectPeakTier(dateStr);
+  if(tier === "tier2"){
+    return { tier: "level2", supplement: EVOKE_LEVEL2_RATE.supplement, mattressRate: EVOKE_LEVEL2_RATE.mattressRate };
+  }
+  if(tier === "tier1"){
+    return { tier: "level1", supplement: EVOKE_LEVEL1_RATE.supplement, mattressRate: EVOKE_LEVEL1_RATE.mattressRate };
+  }
+  // Dhordo classifies this date as neither Tier 1 nor Tier 2 — base
+  // rate, no surcharge.
+  return { tier: "base", supplement: 0, mattressRate: EVOKE_RATES.mattressBase };
+}
+
+/* Single shared pricing calculation for an Evoke Dholavira stay.
+   The applicable rate tier (base / Level 1 / Level 2) is determined
+   ONCE from the check-in date and then locked for the entire stay —
+   it is never recalculated per night. A 2-night stay that begins on
+   a peak check-in date is charged the peak rate for both nights, even
+   if the second night would, on its own, fall on a normal date; a
+   stay beginning on a normal date stays at the normal rate for its
+   whole duration even if it runs into a peak date partway through.
+   Used identically by the live quote, the quote card, the PDF, Share
+   PDF, and the WhatsApp summary. */
+function computeEvokeStay({ accommodation, nights, checkinStr, rooms, singleOcc, mattressQty }){
+  const baseRate = EVOKE_RATES[accommodation].base;
+
+  // Tier locked from the check-in date alone — not looped per night.
+  const rateInfo = getEvokeRateForDate(checkinStr);
+  const finalPerPersonNightRate = baseRate + rateInfo.supplement;
+
+  // Single occupancy: 75% of the double-occupancy cost per room,
+  // i.e. finalPerPersonNightRate x 2 x 0.75 = x1.5 — charged once
+  // per room, never multiplied by an adult count again. Double
+  // occupancy: the normal x2-per-room calculation. The same
+  // per-night room rate applies to every night of the stay.
+  const nightRoomRate = singleOcc ? finalPerPersonNightRate * 1.5 : finalPerPersonNightRate * 2;
+  const accommodationTotal = nightRoomRate * rooms * nights;
+
+  const mattressTotal = mattressQty > 0 ? mattressQty * rateInfo.mattressRate * nights : 0;
+
+  const guestsPerRoom = singleOcc ? 1 : 2;
+  return {
+    accommodationTotal,
+    mattressTotal,
+    subtotal: accommodationTotal + mattressTotal,
+    totalGuests: guestsPerRoom * rooms,
+    nightBreakdown: [{ date: checkinStr, tier: rateInfo.tier, nights }],
+  };
+}
+
+/* ================================================================
+   EVOKE DHOLAVIRA — ITINERARY CONTENT
+   ================================================================ */
+const EVOKE_DAY1_ITEMS = [
+  { time: "12:30 PM onwards", activity: "Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the dining area featuring local flavours." },
+  { time: "02:30 PM – 03:30 PM", activity: "Leisure time / indulge in in-house activities such as swimming pool or clubhouse games including chess, carrom and snooker." },
+  { time: "03:30 PM – 04:00 PM", activity: "Tea/coffee at the dining area." },
+  { time: "04:00 PM – 05:30 PM", activity: "Visit the Archaeology Museum and Excavation Site. Dholavira Excavation Site is one of the best-preserved Harappan cities." },
+  { time: "05:30 PM – 07:30 PM", activity: "Spend the evening at Road Through Heaven and return to Dholavira Resort." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+  { time: "10:00 PM – 10:30 PM", activity: "Stargazing under the desert sky." },
+];
+const EVOKE_DAY1_NOTE = "The museum remains closed every Friday.";
+
+// Used instead of EVOKE_DAY1_ITEMS only when the guest's Rann Utsav
+// stay was 3 Nights/4 Days — that itinerary's Day 3 already visits
+// the Archaeological Museum, Excavation Site and Road Through Heaven,
+// so this variant skips those to avoid showing them twice. Pricing is
+// completely unaffected either way.
+const EVOKE_DAY1_ITEMS_DEDUP = [
+  { time: "12:30 PM onwards", activity: "Warm welcome and check-in." },
+  { time: "12:30 PM – 02:30 PM", activity: "Enjoy a delicious lunch at the dining area featuring local flavours." },
+  { time: "02:30 PM – 04:00 PM", activity: "Leisure time / indulge in in-house activities such as swimming pool or clubhouse games including chess, carrom and snooker." },
+  { time: "07:30 PM – 10:00 PM", activity: "Dinner at the dining area." },
+  { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+  { time: "10:00 PM – 10:30 PM", activity: "Stargazing under the desert sky." },
+];
+const EVOKE_DEDUP_NOTE = "Dholavira Archaeological Museum, Excavation Site and Road Through Heaven were covered during the Rann Utsav itinerary and are therefore not repeated.";
+
+const EVOKE_CHECKOUT_DROPOFF = "Drop-off to Bhuj Railway Station / Bhuj Airport or Rann Utsav – The Tent City, Dhordo, depending on the guest's onward journey.";
+
+const EVOKE_ITINERARIES = {
+  "1": {
+    label: "1 Night / 2 Days",
+    days: [
+      { title: "Day 1", items: EVOKE_DAY1_ITEMS, note: EVOKE_DAY1_NOTE },
+      { title: "Day 2", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM", activity: `Check-out from Evoke Dholavira Resort. ${EVOKE_CHECKOUT_DROPOFF}` },
+      ]},
+    ],
+  },
+  "2": {
+    label: "2 Nights / 3 Days",
+    days: [
+      { title: "Day 1", items: EVOKE_DAY1_ITEMS, note: EVOKE_DAY1_NOTE },
+      { title: "Day 2", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM – 11:30 AM", activity: "Fossil Park Visit. Marvel at ancient fossils and remnants of a prehistoric world at Kutch Fossil Park." },
+        { time: "12:30 PM – 02:30 PM", activity: "Lunch." },
+        { time: "02:30 PM – 03:30 PM", activity: "Leisure / in-house activities." },
+        { time: "05:00 PM – 06:30 PM", activity: "Visit Dattatreya Temple with views of the sunset." },
+        { time: "07:30 PM – 10:00 PM", activity: "Dinner." },
+        { time: "09:00 PM – 10:30 PM", activity: "Cultural activities." },
+        { time: "10:00 PM – 10:30 PM", activity: "Stargazing." },
+      ]},
+      { title: "Day 3", items: [
+        { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+        { time: "07:30 AM – 09:30 AM", activity: "Breakfast." },
+        { time: "09:30 AM", activity: `Check-out. ${EVOKE_CHECKOUT_DROPOFF}` },
+      ]},
+    ],
+  },
+};
+
+/* Returns the Evoke Dholavira itinerary days for the given stay
+   length, substituting the deduplicated Day 1 when the guest's Rann
+   Utsav stay was 3 Nights/4 Days (see EVOKE_DAY1_ITEMS_DEDUP above). */
+function getEvokeDays(evokeNights, dedupArchaeology){
+  const base = EVOKE_ITINERARIES[String(evokeNights)];
+  if(!base) return [];
+  const days = base.days.map(d => ({ ...d }));
+  if(dedupArchaeology && days.length > 0){
+    days[0] = { ...days[0], items: EVOKE_DAY1_ITEMS_DEDUP, note: EVOKE_DEDUP_NOTE };
+  }
+  return days;
+}
+
+// Rann Utsav's final (checkout) day content, used when NOT extending
+// to Evoke Dholavira — identical to the existing CHECKOUT_ITEMS.
+function getRannCheckoutItems(hasEvokeExtension){
+  if(!hasEvokeExtension) return CHECKOUT_ITEMS;
+  // The checkout day becomes a transfer day instead of the normal
+  // temple/museum sightseeing.
+  return [
+    { time: "06:00 AM – 06:30 AM", activity: "Morning Tea." },
+    { time: "06:30 AM – 07:30 AM", activity: "Yoga session at the dedicated area." },
+    { time: "07:30 AM – 09:30 AM", activity: "Breakfast at the respective dining area." },
+    { time: "09:30 AM onwards", activity: "Check-out from Rann Utsav – The Tent City, Dhordo." },
+    { time: "10:30 AM", activity: "Transfer from Rann Utsav – The Tent City, Dhordo to Evoke Dholavira." },
+    { time: "12:30 PM onwards", activity: "Arrival / check-in at Evoke Dholavira." },
+  ];
+}
+
+/* Returns the Rann Utsav itinerary days for the given package length.
+   When an Evoke Dholavira extension follows, only the LAST day's
+   content is swapped for the transfer-day version above — the base
+   ITINERARIES object itself is never mutated, so the existing
+   itinerary (extension = No) is completely unaffected. */
+function getRannDays(rannNights, hasEvokeExtension){
+  const base = ITINERARIES[String(rannNights)];
+  if(!base) return [];
+  const days = base.days.map(d => ({ ...d }));
+  if(hasEvokeExtension && days.length > 0){
+    const lastIdx = days.length - 1;
+    days[lastIdx] = { ...days[lastIdx], items: getRannCheckoutItems(true), note: undefined };
+  }
+  return days;
+}
+
+/* ================================================================
+   DOM HELPERS
+   ================================================================ */
+const $ = (id) => document.getElementById(id);
+const qsa = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let lineCounter = 0;
+let lastQuote = null;
+// Explicit application state for the itinerary toggle — read from
+// here everywhere (quote generation, PDF, share), never re-read from
+// the checkbox at the last moment, so it stays consistent regardless
+// of when/where it's needed.
+let includeItinerary = false;
+// Booking Type governs which sections apply — "rann" (default),
+// "rann_dholavira" (both), or "dholavira" (Evoke only). This replaces
+// the old standalone "Include Evoke Dholavira Stay?" toggle, which
+// would otherwise be redundant with (and could contradict) this
+// selector. `includeEvoke` is derived from it, not from a checkbox.
+let bookingType = "rann";
+let includeEvoke = false; // derived: bookingType !== "rann" — see applyBookingType()
+
+/* ================================================================
+   PEAK-DATE DETECTION
+   Peak/Full-Moon pricing is triggered ONLY by the check-in date
+   itself — a stay that merely passes through a peak date on a later
+   night (with a non-peak check-in) does not qualify. `nights` is no
+   longer used here; kept as a parameter for call-site compatibility.
+   ================================================================ */
+/* Parses a "YYYY-MM-DD" HTML date-input value as a local date (year,
+   month, day components) rather than letting the JS Date constructor
+   treat it as UTC — avoids the string-parsing timezone shift where
+   new Date("2027-01-20") can render as 19 Jan in negative-UTC-offset
+   timezones. */
+function parseLocalDate(dateString){
+  if(!dateString) return null;
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/* Strips any time component down to local midnight, so two dates
+   built the same way always compare cleanly. */
+function normalizeDate(date){
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function inRange(dateStr, ranges){
+  const d = parseLocalDate(dateStr);
+  if(!d) return false;
+  const t = normalizeDate(d).getTime();
+  return ranges.some(([s,e]) => {
+    const start = normalizeDate(parseLocalDate(s)).getTime();
+    const end = normalizeDate(parseLocalDate(e)).getTime();
+    return t >= start && t <= end; // inclusive of both the start and end date
+  });
+}
+
+function detectPeakTier(checkinStr, nights){
+  if(!checkinStr) return "none";
+  if(inRange(checkinStr, CHRISTMAS) || inRange(checkinStr, TIER2_SPECIFIC)) return "tier2";
+  if(inRange(checkinStr, TIER1_SPECIFIC) || inRange(checkinStr, TIER1_SEASON)) return "tier1";
+  return "none";
+}
+
+/* ================================================================
+   FORMATTERS (unchanged)
+   ================================================================ */
+function fmtINR(n){ n = Math.round(n); return "₹" + n.toLocaleString("en-IN"); }
+// Plain "INR n,nn,nnn" form (no ₹ glyph) — used by the WhatsApp copy text
+// and the PDF, where a plain-text currency label reads more reliably
+// across devices/fonts than the rupee symbol.
+function fmtINRPlain(n){ n = Math.round(n); return "INR " + n.toLocaleString("en-IN"); }
+function fmtDate(str){
+  if(!str) return "—";
+  const d = new Date(str);
+  return d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+}
+// Longer, more formal date form for the itinerary ("20 February 2027").
+function fmtDateLong(d){
+  return d.toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+}
+
+/* Adds `days` to a YYYY-MM-DD date string using safe local-date
+   construction (year/month/day components, not a raw Date-string
+   parse and not millisecond arithmetic), so the result can never
+   drift a day due to timezone/DST handling. Returns a plain Date
+   object at local midnight. */
+function addDaysLocal(checkinStr, days){
+  const [y, m, d] = checkinStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return dt;
+}
+
+/* Inverse of addDaysLocal/parseLocalDate — formats a local Date back
+   into a "YYYY-MM-DD" string using its local Y/M/D components (never
+   toISOString(), which would reintroduce the UTC-shift risk these
+   helpers exist to avoid). */
+function toISODateLocal(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/* ================================================================
+   STATUS MESSAGE HELPER
+   ================================================================ */
+function setStatus(message, tone){
+  const el = $("statusMsg");
+  el.textContent = message || "";
+  el.classList.remove("status-ok","status-warn");
+  if(tone) el.classList.add(tone === "ok" ? "status-ok" : "status-warn");
+}
+
+/* ================================================================
+   OPTION-LIST BUILDERS
+   ================================================================ */
+function categoryOptions(selected){
+  return CATEGORY_LABELS.map(c=>{
+    const cap = RATES[c].flat ? ` (max ${RATES[c].capacity} pax)` : "";
+    return `<option value="${c}" ${c===selected?"selected":""}>${c}${cap}</option>`;
+  }).join("");
+}
+function numberOptions(max, selected){
+  let out = "";
+  for(let i=0;i<=max;i++){ out += `<option value="${i}" ${i===selected?"selected":""}>${i}</option>`; }
+  return out;
+}
+// Same as numberOptions but with a configurable lower bound — used for
+// Adults, which should offer 1–4 rather than starting at 0.
+function numberOptionsRange(min, max, selected){
+  let out = "";
+  for(let i=min;i<=max;i++){ out += `<option value="${i}" ${i===selected?"selected":""}>${i}</option>`; }
+  return out;
+}
+
+/* ================================================================
+   TENT CATEGORY LINES
+   ================================================================ */
+function addLine(category){
+  const idx = lineCounter++;
+  const container = $("linesContainer");
+  const div = document.createElement("div");
+  div.className = "tent-line";
+  div.dataset.lineIndex = idx;
+  div.innerHTML = `
+    <div class="line-index-tag">Tent Category ${qsa('.tent-line').length + 1}</div>
+    <div class="tent-line-head">
+      <div class="field">
+        <label for="lineCategory-${idx}">Select Tent</label>
+        <select id="lineCategory-${idx}" class="line-category" data-idx="${idx}">${categoryOptions(category)}</select>
+      </div>
+      <div class="field">
+        <label for="lineQty-${idx}">No. of Tents</label>
+        <select id="lineQty-${idx}" class="line-qty" data-idx="${idx}">
+          <option value="">Select</option>
+          ${numberOptions(20, DEFAULT_TENT_QTY).replace('<option value="0">0</option>','')}
+        </select>
+      </div>
+      <button class="btn-remove" type="button" data-remove-idx="${idx}" aria-label="Remove this tent category">✕ Remove</button>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="lineSingleOcc-${idx}">Single Occupancy</label>
+        <select id="lineSingleOcc-${idx}" class="line-singleocc">
+          <option value="no">No</option>
+          <option value="yes">Yes (75% of double rate)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lineMattress-${idx}">Extra Mattress (qty) <span class="mattress-max-tag label-hint"></span></label>
+        <input id="lineMattress-${idx}" class="line-mattress" type="number" min="0" max="20" value="0" inputmode="numeric">
+      </div>
+    </div>
+    <div class="tent-instances" data-line-index="${idx}"></div>
+    <div class="banner warn-box line-capacity-warn" role="alert"></div>
+  `;
+  container.appendChild(div);
+
+  // Wire up events for this line. Category/qty changes reshape the tent
+  // instance blocks and re-check capacity; mattress/single-occupancy only
+  // affect pricing, but still need a listener so live-refresh (see
+  // maybeLiveUpdate) picks up the change immediately instead of waiting
+  // for the next unrelated field to fire an event.
+  div.querySelector(".line-category").addEventListener("change", () => { syncAdultsForLine(idx); onLineChange(idx); });
+  div.querySelector(".line-qty").addEventListener("change", () => onLineChange(idx));
+  div.querySelector(".line-mattress").addEventListener("input", () => { clampMattressInput(idx); maybeLiveUpdate(); });
+  div.querySelector(".line-singleocc").addEventListener("change", () => { syncAdultsForLine(idx); checkLineCapacity(idx); maybeLiveUpdate(); });
+  div.querySelector(`[data-remove-idx="${idx}"]`).addEventListener("click", () => { removeLine(idx); maybeLiveUpdate(); });
+
+  // Initialize mattress max/tag and capacity messaging for the new line
+  // right away, rather than waiting for the user's first interaction.
+  // This also performs the initial render of tent-instance card(s) —
+  // with the qty select defaulting to DEFAULT_TENT_QTY (1), that means
+  // exactly one "Tent 1" card appears, not two.
+  onLineChange(idx);
+}
+
+function onLineChange(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  if(!line) return;
+  const qty = parseInt(line.querySelector(".line-qty").value || "0", 10);
+  clampMattressInput(idx);
+  renderTentInstances(idx, qty);
+  checkLineCapacity(idx);
+}
+
+// Categories that allow 2 extra mattresses per tent (matched on the
+// exact internal RATES key, not the visible label) — every other
+// category allows only 1 per tent. The line's total mattress ceiling
+// is this per-tent allowance multiplied by its number of tents.
+const SPECIAL_MATTRESS_CATEGORIES = ["Super Premium Tent", "Darbari Suite", "Rajwadi Suite"];
+
+function mattressPerTentAllowance(category){
+  return SPECIAL_MATTRESS_CATEGORIES.includes(category) ? 2 : 1;
+}
+
+// Single source of truth for a line's mattress ceiling — used both to
+// drive the input's min/max/hint text and, independently, to re-clamp
+// the value inside generateQuote() itself so an over-limit quantity
+// can never reach pricing/preview/PDF/WhatsApp even if the input's own
+// clamping were somehow bypassed.
+function getMattressMax(category, qty){
+  const tents = Math.max(parseInt(qty, 10) || 0, 1);
+  return mattressPerTentAllowance(category) * tents;
+}
+
+/* Keeps the Extra Mattress field's max (and its helper text) in sync
+   with the selected category AND the current number of tents, and
+   clamps any value that's now too high. Called on category change, on
+   number-of-tents change, on line creation, and on every mattress
+   keystroke. */
+function clampMattressInput(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  if(!line) return;
+  const category = line.querySelector(".line-category").value;
+  const qty = line.querySelector(".line-qty").value;
+  const max = getMattressMax(category, qty);
+  const mattressInput = line.querySelector(".line-mattress");
+  const mattressTag = line.querySelector(".mattress-max-tag");
+  mattressInput.max = max;
+  mattressTag.textContent = `Maximum ${max} mattress${max === 1 ? "" : "es"} for this category`;
+  if(parseInt(mattressInput.value || 0, 10) > max) mattressInput.value = max;
+}
+
+/* Rebuilds the Tent 1 / Tent 2 / ... guest-detail cards for a line to
+   match `qty`. When qty shrinks, only the now-extra cards are dropped
+   — data already entered for the cards that remain (Tent 1, Tent 2,
+   etc.) is preserved rather than being reset, and when qty grows,
+   existing cards are left alone and new ones are appended. */
+function renderTentInstances(idx, qty){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  const holder = line.querySelector(`.tent-instances[data-line-index="${idx}"]`);
+  const existing = qsa(".tent-instance", holder);
+
+  // Shrinking: remove only the surplus cards from the end, keep the rest.
+  if(existing.length > qty){
+    for(let n = existing.length; n > qty; n--){
+      existing[n - 1].remove();
+    }
+    return;
+  }
+
+  // Adults range depends on the category currently selected for this
+  // line — Darbari Suite allows up to 4, every other category up to 2.
+  // syncAdultsForLine() (called at the end of this function) finalizes
+  // the actual options/value/disabled state per the current category
+  // AND single-occupancy setting — this initial render just needs
+  // *a* valid select to exist.
+  const category = line.querySelector(".line-category").value;
+  const adultMax = getAdultMax(category);
+
+  // Growing (or first render): append whatever cards are missing.
+  for(let n = existing.length + 1; n <= qty; n++){
+    const block = document.createElement("div");
+    block.className = "tent-instance";
+    block.innerHTML = `
+      <div class="ti-title">Tent ${n}</div>
+      <div class="field">
+        <label for="tiAdults-${idx}-${n}">Adults (6–60+)</label>
+        <select id="tiAdults-${idx}-${n}" class="ti-adults" aria-label="Tent ${n} adults, ages 6 and up">${numberOptionsRange(1,adultMax,2)}</select>
+        <span class="ti-singleocc-hint label-hint" style="display:none;">Automatically set to 1 for single occupancy</span>
+      </div>
+    `;
+    holder.appendChild(block);
+    block.querySelector(".ti-adults").addEventListener("change", () => { checkLineCapacity(idx); maybeLiveUpdate(); });
+  }
+
+  // Newly-added cards must immediately reflect the line's current
+  // Single Occupancy state (1 adult + disabled) or normal state
+  // (2, or 2/3/4 for Darbari) rather than a generic default.
+  syncAdultsForLine(idx);
+}
+
+// Adult-count ceiling per category: only Darbari Suite (matched on the
+// exact internal RATES key, not the display label) allows up to 4
+// adults in a single tent; every other category is capped at 2. This
+// is used only to size the *initial* placeholder select in
+// renderTentInstances before syncAdultsForLine() finalizes it — see
+// getNormalAdultRange() for the actual normal-occupancy option range.
+function getAdultMax(category){
+  return category === "Darbari Suite" ? 4 : 2;
+}
+
+// Normal (non-single-occupancy) adult range for a category. 1 is
+// deliberately excluded here — a lone adult is only ever reached via
+// the Single Occupancy toggle, never as a manually selectable "normal"
+// option, so it can't drift out of sync with the pricing rule.
+function getNormalAdultRange(category){
+  return category === "Darbari Suite" ? { min: 2, max: 4 } : { min: 2, max: 2 };
+}
+
+/* Single place that keeps every tent card's Adults field in sync with
+   both the line's category AND its Single Occupancy setting. Called
+   whenever either changes, whenever the tent count changes (new cards
+   need the same treatment as existing ones), and once right after a
+   line is created.
+
+   - Single Occupancy = Yes: every card is forced to exactly 1 adult,
+     the dropdown is disabled (not hidden — the guest count must stay
+     visible), and its "auto-set" hint is shown.
+   - Single Occupancy = No: every card is re-enabled, its hint hidden,
+     and its options rebuilt for the category's normal range (2 only,
+     or 2/3/4 for Darbari). A value of 1 (left over from Single
+     Occupancy) — or any value outside the new range — resets to 2,
+     never silently restoring an old 3 or 4. */
+function syncAdultsForLine(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  if(!line) return;
+  const category = line.querySelector(".line-category").value;
+  const singleOcc = line.querySelector(".line-singleocc").value === "yes";
+
+  qsa(".tent-instance", line).forEach(block => {
+    const sel = block.querySelector(".ti-adults");
+    const hint = block.querySelector(".ti-singleocc-hint");
+    if(singleOcc){
+      sel.innerHTML = numberOptionsRange(1, 1, 1);
+      sel.value = "1";
+      sel.disabled = true;
+      if(hint) hint.style.display = "";
+    } else {
+      const { min, max } = getNormalAdultRange(category);
+      const current = parseInt(sel.value || 0, 10);
+      const next = (current < min || current > max) ? 2 : current;
+      sel.innerHTML = numberOptionsRange(min, max, next);
+      sel.disabled = false;
+      if(hint) hint.style.display = "none";
+    }
+  });
+}
+
+function removeLine(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  if(line) line.remove();
+  qsa(".tent-line").forEach((el,i)=>{
+    el.querySelector(".line-index-tag").textContent = `Tent Category ${i+1}`;
+  });
+}
+
+function checkLineCapacity(idx){
+  const line = document.querySelector(`.tent-line[data-line-index="${idx}"]`);
+  const category = line.querySelector(".line-category").value;
+  const rate = RATES[category];
+  const warnBox = line.querySelector(".line-capacity-warn");
+  warnBox.classList.remove("show");
+  warnBox.textContent = "";
+
+  const base = rate.flat ? rate.capacity : rate.baseCapacity;
+  const maxWithMattress = base + rate.maxMattress;
+  const tents = line.querySelectorAll(".tent-instance");
+  let overBase = false, overMax = false;
+  tents.forEach(t=>{
+    const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
+    const total = a;
+    if(total > base && total <= maxWithMattress) overBase = true;
+    if(total > maxWithMattress) overMax = true;
+  });
+  if(overMax){
+    warnBox.textContent = `${category} allows up to ${base} guests per tent, plus ${rate.maxMattress} extra mattress(es) (max ${maxWithMattress} total). Please split guests across another tent.`;
+    warnBox.classList.add("show");
+  } else if(overBase){
+    warnBox.textContent = `${category} is priced for ${base} guests per tent — add an extra mattress above to cover the additional guest(s) (max ${rate.maxMattress} per tent).`;
+    warnBox.classList.add("show");
+  }
+}
+
+/* ================================================================
+   CHECK-OUT DATE + PEAK BANNER
+   ================================================================ */
+function updateCheckoutAndBanner(){
+  const checkin = $("checkinDate").value;
+  const nights = parseInt($("nights").value, 10);
+  const checkoutField = $("checkoutDate");
+  const banner = $("peakBanner");
+  const dateWarn = $("dateWarn");
+  banner.classList.remove("show","tier2"); banner.textContent = "";
+  dateWarn.classList.remove("show"); dateWarn.textContent = "";
+
+  if(checkin){
+    const rannCheckoutStr = toISODateLocal(addDaysLocal(checkin, nights));
+    checkoutField.value = fmtDate(rannCheckoutStr);
+
+    if(checkin < SEASON_START || checkin > SEASON_END){
+      dateWarn.textContent = "Selected date is outside the current season (1 Nov 2026 – 7 Mar 2027). Please choose a date within this range.";
+      dateWarn.classList.add("show");
+    } else if(rannCheckoutStr > SEASON_END){
+      dateWarn.textContent = "This stay extends beyond the season end (7 Mar 2027). Please adjust the check-in date or package length.";
+      dateWarn.classList.add("show");
+    }
+  } else {
+    checkoutField.value = "";
+  }
+
+  updateEvokeCheckin();
+
+  const override = $("peakOverride").value;
+  const tier = override === "auto" ? detectPeakTier(checkin, nights) : override;
+
+  if(tier === "tier1"){
+    banner.textContent = "Peak date detected — Standard Peak (Tier 1) additional charge applies.";
+    banner.classList.add("show");
+  } else if(tier === "tier2"){
+    banner.textContent = "Peak date detected — Christmas / High Peak (Tier 2) additional charge applies.";
+    banner.classList.add("show","tier2");
+  }
+  return tier;
+}
+
+/* ================================================================
+   EVOKE DHOLAVIRA — auto check-in date, season validation, journey
+   duration. Runs on Rann check-in/package change AND on the Evoke
+   toggle/duration change, so the calculated date is always current
+   without needing "Generate Quotation" first.
+   ================================================================ */
+/* ================================================================
+   BOOKING TYPE
+   Governs which sections are shown/required. "rann" (default) keeps
+   the site behaving exactly as before this feature. "rann_dholavira"
+   shows both sections with the Evoke check-in auto-calculated from
+   the Rann checkout. "dholavira" hides the entire Rann section and
+   switches the Evoke check-in to a manually-selectable date.
+   ================================================================ */
+function applyBookingType(){
+  bookingType = $("bookingType").value;
+  includeEvoke = bookingType !== "rann";
+  const isDholaviraOnly = bookingType === "dholavira";
+
+  $("rannSection").hidden = isDholaviraOnly;
+  $("rannEvokeDivider").hidden = isDholaviraOnly; // avoid a stray double divider when Rann is hidden
+  $("evokeSection").hidden = !includeEvoke;
+
+  const autoField = $("evokeCheckinDisplay");
+  const manualField = $("evokeOnlyCheckin");
+  const label = $("evokeCheckinLabel");
+  if(isDholaviraOnly){
+    autoField.hidden = true;
+    manualField.hidden = false;
+    label.textContent = "Evoke Dholavira Check-in Date";
+    label.setAttribute("for", "evokeOnlyCheckin");
+  } else {
+    autoField.hidden = false;
+    manualField.hidden = true;
+    label.textContent = "Dholavira Check-in (auto)";
+    label.setAttribute("for", "evokeCheckinDisplay");
+  }
+
+  updateEvokeCheckin();
+  renderItineraryPreview();
+  maybeLiveUpdate();
+}
+
+/* Single shared source for "what is the Evoke Dholavira check-in
+   date right now" — used by the live preview, updateEvokeCheckin(),
+   and generateQuote() alike, so the auto vs manual logic never has
+   to be duplicated or drift out of sync between them. Returns null
+   when the date isn't determinable yet (e.g. no Rann check-in chosen
+   in combined mode, or no date picked yet in Evoke-only mode). */
+function getEvokeCheckinDateStr(){
+  if(!includeEvoke) return null;
+  if(bookingType === "dholavira"){
+    const v = $("evokeOnlyCheckin").value;
+    return v || null;
+  }
+  const rannCheckin = $("checkinDate").value;
+  if(!rannCheckin) return null;
+  const rannNights = parseInt($("nights").value, 10);
+  return toISODateLocal(addDaysLocal(rannCheckin, rannNights));
+}
+
+function updateEvokeCheckin(){
+  const warnBox = $("evokeSeasonWarn");
+  const journeyEl = $("evokeJourneyTotal");
+  warnBox.classList.remove("show"); warnBox.textContent = "";
+
+  if(!includeEvoke){
+    $("evokeCheckinDisplay").value = "";
+    journeyEl.textContent = "";
+    return;
+  }
+
+  const evokeCheckinStr = getEvokeCheckinDateStr();
+  const evokeNights = parseInt($("evokeNights").value, 10);
+
+  if(bookingType !== "dholavira"){
+    // Combined mode: keep the read-only display in sync (Evoke-only
+    // mode uses its own native date input, which needs no such sync).
+    $("evokeCheckinDisplay").value = evokeCheckinStr ? fmtDate(evokeCheckinStr) : "";
+  }
+
+  if(!evokeCheckinStr){
+    journeyEl.textContent = "";
+    return;
+  }
+
+  if(evokeCheckinStr < EVOKE_SEASON_START || evokeCheckinStr > EVOKE_SEASON_END){
+    warnBox.textContent = "This Evoke Dholavira check-in date (" + fmtDate(evokeCheckinStr) + ") falls outside the Evoke Dholavira season (1 Nov 2026 – 28 Feb 2027). Please adjust the date before generating the quotation.";
+    warnBox.classList.add("show");
+  }
+
+  if(bookingType === "rann_dholavira"){
+    const rannNights = parseInt($("nights").value, 10);
+    const totalNights = rannNights + evokeNights;
+    const totalDays = totalNights + 1;
+    journeyEl.textContent = `Total Journey: ${totalNights} Night${totalNights > 1 ? "s" : ""} / ${totalDays} Days (Rann Utsav ${rannNights}N + Evoke Dholavira ${evokeNights}N)`;
+  } else {
+    journeyEl.textContent = "";
+  }
+}
+
+/* ================================================================
+   ITINERARY PREVIEW (on-screen)
+   Pure render function — reads the current package + check-in date
+   and re-draws the read-only preview. Called on load, on package
+   change, on check-in date change, and on toggle change, so it is
+   always in sync without needing "Generate Quotation" first.
+   ================================================================ */
+function renderItineraryPreview(){
+  const container = $("itineraryPreview");
+
+  if(!includeItinerary){
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  function dayCardHtml(day, dt){
+    const dateLabel = dt ? `<span class="itin-day-date">${fmtDateLong(dt)}</span>` : "";
+    const itemsHtml = day.items.map(it =>
+      `<div class="itin-item"><span class="itin-time">${it.time}</span><span class="itin-activity">${it.activity}</span></div>`
+    ).join("");
+    const noteHtml = day.note ? `<div class="itin-note">Important Note: ${day.note}</div>` : "";
+    return `
+      <div class="itin-day-card">
+        <div class="itin-day-head">
+          <span class="itin-day-title">${day.title}</span>
+          ${dateLabel}
+        </div>
+        ${itemsHtml}
+        ${noteHtml}
+      </div>`;
+  }
+
+  // ---- Evoke Dholavira only: no Rann itinerary at all ----
+  if(bookingType === "dholavira"){
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeItinerary = EVOKE_ITINERARIES[String(evokeNights)];
+    if(!evokeItinerary){
+      container.hidden = true;
+      container.innerHTML = "";
+      return;
+    }
+    const evokeCheckin = getEvokeCheckinDateStr();
+    const evokeDays = getEvokeDays(evokeNights, false); // no Rann stay to dedup against
+    const evokeCards = evokeDays.map((day, i) =>
+      dayCardHtml(day, evokeCheckin ? addDaysLocal(evokeCheckin, i) : null)
+    ).join("");
+
+    container.hidden = false;
+    container.innerHTML = `
+      <p class="qlabel" style="margin:0 0 10px;">EVOKE DHOLAVIRA ITINERARY — ${evokeItinerary.label}</p>
+      ${evokeCards}
+    `;
+    return;
+  }
+
+  // ---- Rann only, or Rann + Evoke ----
+  const nights = parseInt($("nights").value, 10);
+  const rannItinerary = ITINERARIES[String(nights)];
+  if(!rannItinerary){
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  const checkin = $("checkinDate").value; // may be empty — handled below
+
+  const rannDays = getRannDays(nights, includeEvoke);
+  const rannCards = rannDays.map((day, i) =>
+    dayCardHtml(day, checkin ? addDaysLocal(checkin, i) : null)
+  ).join("");
+
+  let html;
+  if(!includeEvoke){
+    html = `
+      <p class="qlabel" style="margin:0 0 10px;">${rannItinerary.label} — Itinerary Preview</p>
+      ${rannCards}
+    `;
+  } else {
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeItinerary = EVOKE_ITINERARIES[String(evokeNights)];
+    const evokeCheckin = getEvokeCheckinDateStr();
+    const dedup = nights === 3; // Rann 3N/4D already covers the archaeological sightseeing
+    const evokeDays = getEvokeDays(evokeNights, dedup);
+    const evokeCards = evokeDays.map((day, i) =>
+      dayCardHtml(day, evokeCheckin ? addDaysLocal(evokeCheckin, i) : null)
+    ).join("");
+
+    html = `
+      <p class="qlabel" style="margin:0 0 10px;">RANN UTSAV ITINERARY — ${rannItinerary.label}</p>
+      ${rannCards}
+      <p class="qlabel" style="margin:16px 0 10px;">EVOKE DHOLAVIRA — EXTENDED STAY — ${evokeItinerary ? evokeItinerary.label : ""}</p>
+      ${evokeCards}
+    `;
+  }
+
+  container.hidden = false;
+  container.innerHTML = html;
+}
+
+/* ================================================================
+   TENT RATE CALCULATION — single shared function
+   Used by generateQuote() only; the preview, PDF, Share PDF, and
+   WhatsApp text all read the resulting categoryLines figures rather
+   than recalculating anything themselves, so there is exactly one
+   place this formula lives.
+
+   SINGLE OCCUPANCY — CORRECTED RULE
+   Official rule: single occupancy = 75% of the DOUBLE-occupancy cost,
+   i.e. finalPerPersonRate * 2 * 0.75 = finalPerPersonRate * 1.5,
+   charged once per tent (never multiplied again by an entered adult
+   count). This replaces the previous (incorrect) "per-person rate x
+   0.75" calculation, which undercharged single-occupancy bookings and
+   also dropped the peak-date surcharge out of the 0.75 factor.
+   The peak-date surcharge is added to the base rate FIRST, before the
+   x1.5 (or the normal x-guests) multiplication is applied — the
+   surcharge itself is never recalculated twice.
+   Darbari/Rajwadi (flat, fixed package rates) are entirely unaffected:
+   they never run the per-person/single-occupancy formula at all.
+   ================================================================ */
+function computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests }){
+  if(rate.flat){
+    // Darbari / Rajwadi Suite: fixed All Days package rate, no
+    // per-person or single-occupancy formula involved.
+    return { tentRateAmount: rate[nights] * qty, tentRateBase: rate[nights] * qty, peakSurcharge: 0 };
+  }
+
+  const baseRate = rate[nights];
+  const peakSurchargePerPerson = (tier === "tier1" || tier === "tier2") ? ADDITIONAL[tier][nights] : 0;
+  const finalPerPersonRate = baseRate + peakSurchargePerPerson;
+
+  if(singleOcc){
+    // Single occupancy is charged once per tent at 1.5x the final
+    // per-person rate (base + peak surcharge already combined) —
+    // not scaled by the entered adult count.
+    const tentRateAmount = finalPerPersonRate * 1.5 * qty;
+    return { tentRateAmount, tentRateBase: tentRateAmount, peakSurcharge: 0 };
+  }
+
+  // Normal (double) occupancy — unchanged from before: base rate and
+  // peak surcharge each scale with the actual number of guests entered.
+  const tentRateBase = baseRate * lineGuests;
+  const peakSurcharge = peakSurchargePerPerson * lineGuests;
+  return { tentRateAmount: tentRateBase + peakSurcharge, tentRateBase, peakSurcharge };
+}
+
+/* ================================================================
+   QUOTATION GENERATION (pricing math unchanged)
+   ================================================================ */
+function generateQuote(opts){
+  const silent = !!(opts && opts.silent);
+  // In live-update mode we never interrupt the user: validation failures
+  // simply skip the refresh (the previously generated quote stays on
+  // screen) instead of popping a warning or stealing focus mid-typing.
+  const fail = (msg, focusId) => {
+    if(!silent){
+      setStatus(msg, "warn");
+      if(focusId) $(focusId).focus();
+    }
+    return;
+  };
+
+  const name = $("guestName").value.trim();
+  if(!name){ return fail("Please enter the guest name.", "guestName"); }
+
+  const hasRann = bookingType !== "dholavira";
+  let rann = null;
+
+  if(hasRann){
+    const checkin = $("checkinDate").value;
+    const nights = parseInt($("nights").value, 10);
+
+    if(!checkin){ return fail("Please select a check-in date.", "checkinDate"); }
+    if(checkin < SEASON_START || checkin > SEASON_END){ return fail("Check-in date must fall within 1 Nov 2026 – 7 Mar 2027."); }
+
+    const tier = updateCheckoutAndBanner();
+    const lineEls = qsa(".tent-line");
+    if(lineEls.length === 0){ return fail("Please add at least one tent category."); }
+
+    let totalGrossTentRate = 0, totalMattressCost = 0, totalGuestsBillable = 0;
+    const categoryLines = [];
+
+    for(const line of lineEls){
+      const category = line.querySelector(".line-category").value;
+      const qty = parseInt(line.querySelector(".line-qty").value || 0, 10);
+      if(qty <= 0){ return fail("Please select the number of tents for each category."); }
+      const rate = RATES[category];
+      const singleOcc = line.querySelector(".line-singleocc").value === "yes";
+      const mattressMax = getMattressMax(category, qty);
+      let mattressQty = parseInt(line.querySelector(".line-mattress").value || 0, 10);
+      if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
+      if(mattressQty > mattressMax) mattressQty = mattressMax;
+
+      const tentEls = line.querySelectorAll(".tent-instance");
+      let lineGuests = 0;
+      tentEls.forEach(t=>{
+        const a = parseInt(t.querySelector(".ti-adults").value || 0, 10);
+        lineGuests += a;
+      });
+      if(lineGuests <= 0){ return fail(`Please enter guest counts for ${category}.`); }
+
+      // Single shared pricing calculation — used identically by the live
+      // quote, the preview, the PDF, Share PDF, and WhatsApp text, since
+      // all of those simply read the categoryLines figures computed here
+      // once (nothing recalculates the tent rate a second time anywhere).
+      const { tentRateAmount: lineTentRateDisplay } =
+        computeTentRate({ rate, nights, tier, singleOcc, qty, lineGuests });
+
+      let lineMattressCost = 0;
+      if(mattressQty > 0){
+        const mRate = (tier === "tier1" || tier === "tier2") ? rate.mattressPeak : rate.mattress;
+        lineMattressCost = mRate * nights * mattressQty; // never affected by single occupancy OR discount/TAC
+      }
+
+      totalGrossTentRate += lineTentRateDisplay;
+      totalMattressCost += lineMattressCost;
+      totalGuestsBillable += lineGuests;
+
+      // `guests` (adults — the only per-tent headcount now that Children
+      // fields have been removed) is what pricing is based on and must
+      // not change. `displayGuests` adds the extra mattress count on
+      // top purely for what's shown to the guest — mattresses add people
+      // to the tent even though they're priced as a flat add-on, not a
+      // per-person rate.
+      // `tentRateAmount` + `mattressAmount` together equal `amount`
+      // (the total charged for the category, before any quotation-level
+      // Discount/TAC — that's applied once to the combined total below,
+      // never per category) — the split is display-only.
+      categoryLines.push({
+        category, qty,
+        guests: lineGuests,
+        displayGuests: lineGuests + mattressQty,
+        mattressQty,
+        tentRateAmount: lineTentRateDisplay,
+        mattressAmount: lineMattressCost,
+        amount: lineTentRateDisplay + lineMattressCost
+      });
+    }
+
+    // Rann Discount/TAC — a single quotation-level adjustment applied
+    // exactly once to the combined tent/package rate across every
+    // category (never to extra mattress, never twice, never after GST).
+    const adjustmentType = $("adjustmentType").value === "tac" ? "tac" : "discount";
+    const adjustmentPercent = parseInt($("adjustmentPercent").value || 0, 10) || 0;
+    const grossTentRate = totalGrossTentRate;
+    const adjustmentAmount = grossTentRate * adjustmentPercent / 100;
+    const netTentRate = grossTentRate - adjustmentAmount;
+
+    const rannCheckoutStr = toISODateLocal(addDaysLocal(checkin, nights));
+
+    rann = {
+      checkin, checkout: rannCheckoutStr, nights,
+      guests: totalGuestsBillable,
+      categoryLines,
+      grossTentRate, adjustmentType, adjustmentPercent, adjustmentAmount, netTentRate,
+      mattressTotal: totalMattressCost,
+      subtotal: netTentRate + totalMattressCost,
+    };
+  }
+
+  // ---- Evoke Dholavira (Rann + Evoke, or Evoke only) — isolated from
+  // the Rann pricing above and carries its OWN independent Discount/TAC,
+  // never the Rann one, and never touching Rann's. ----
+  let evoke = null;
+  if(includeEvoke){
+    const evokeNights = parseInt($("evokeNights").value, 10);
+    const evokeCheckin = getEvokeCheckinDateStr();
+    if(!evokeCheckin){
+      return fail(bookingType === "dholavira"
+        ? "Please select the Evoke Dholavira check-in date."
+        : "Please select the Rann Utsav check-in date first, so the Evoke Dholavira check-in can be calculated.");
+    }
+    if(evokeCheckin < EVOKE_SEASON_START || evokeCheckin > EVOKE_SEASON_END){
+      return fail("The Evoke Dholavira check-in date falls outside its 1 Nov 2026 – 28 Feb 2027 season — please adjust the date" + (bookingType === "rann_dholavira" ? " (Rann Utsav check-in or package length)" : "") + ".");
+    }
+    const accommodation = $("evokeAccommodation").value;
+    const rooms = parseInt($("evokeRooms").value || 0, 10);
+    if(rooms <= 0){ return fail("Please select the number of Evoke Dholavira rooms."); }
+    const singleOcc = $("evokeSingleOcc").value === "yes";
+    let mattressQty = parseInt($("evokeMattress").value || 0, 10);
+    if(!Number.isFinite(mattressQty) || mattressQty < 0) mattressQty = 0;
+
+    const stay = computeEvokeStay({ accommodation, nights: evokeNights, checkinStr: evokeCheckin, rooms, singleOcc, mattressQty });
+    const evokeCheckoutStr = toISODateLocal(addDaysLocal(evokeCheckin, evokeNights));
+
+    // Evoke's own Discount/TAC — applies only to the gross accommodation
+    // total, never to Extra Mattress, and is completely independent of
+    // the Rann adjustment above (separate controls, separate state).
+    const dholaviraAdjustmentType = $("dholaviraAdjustmentType").value === "tac" ? "tac" : "discount";
+    const dholaviraAdjustmentPercent = parseInt($("dholaviraAdjustmentPercent").value || 0, 10) || 0;
+    const grossAccommodation = stay.accommodationTotal;
+    const dholaviraAdjustmentAmount = grossAccommodation * dholaviraAdjustmentPercent / 100;
+    const netAccommodation = grossAccommodation - dholaviraAdjustmentAmount;
+
+    evoke = {
+      accommodation, nights: evokeNights, rooms, singleOcc, mattressQty,
+      checkin: evokeCheckin, checkout: evokeCheckoutStr,
+      totalGuests: stay.totalGuests,
+      grossAccommodation,
+      adjustmentType: dholaviraAdjustmentType,
+      adjustmentPercent: dholaviraAdjustmentPercent,
+      adjustmentAmount: dholaviraAdjustmentAmount,
+      netAccommodation,
+      mattressTotal: stay.mattressTotal,
+      subtotal: netAccommodation + stay.mattressTotal,
+    };
+  }
+
+  // Combined taxable amount = Rann (post-discount, if included) + Evoke
+  // (post its own discount, if included) — GST applied once to the
+  // combined total, never twice, never partially.
+  const subtotal = (rann ? rann.subtotal : 0) + (evoke ? evoke.subtotal : 0);
+  const gst = subtotal * 0.18;
+  const net = subtotal + gst;
+
+  lastQuote = {
+    bookingType, name,
+    rann, evoke,
+    taxableAmount: subtotal, gst, net,
+    includeItinerary, // snapshot of the state at generation time
+  };
+
+  renderQuoteCard(lastQuote);
+  setStatus(silent ? "Quotation updated." : "Quotation generated.", "ok");
+}
+
+/* ================================================================
+   LIVE UPDATE
+   Once a quotation has been generated at least once (lastQuote is
+   set), any further change anywhere in the form should refresh it
+   automatically — no "Generate" click required. This is wired as a
+   single delegated listener on the form (see init()), so it covers
+   every current and future field, including ones inside dynamically
+   added tent-category lines, without needing per-field wiring.
+   ================================================================ */
+function maybeLiveUpdate(){
+  if(!lastQuote) return;
+  generateQuote({ silent: true });
+}
+
+function renderQuoteCard(q){
+  $("emptyNote").style.display = "none";
+  $("quoteContent").style.display = "block";
+  $("actionRow").style.display = "grid";
+
+  $("rName").textContent = q.name;
+  $("rRannSection").hidden = !q.rann;
+
+  if(q.rann){
+    const r = q.rann;
+    $("qcPackage").textContent = `Package: ${r.nights} Night${r.nights > 1 ? "s" : ""}` + (q.evoke ? " + Evoke Dholavira" : "");
+    $("rCheckin").textContent = fmtDate(r.checkin);
+    $("rCheckout").textContent = fmtDate(r.checkout);
+
+    const catHolder = $("rCategoryLines");
+    catHolder.innerHTML = r.categoryLines.map(l => {
+      let rows =
+        `<div class="qrow"><span class="k">Tent Category</span><span class="v">${l.category}</span></div>
+         <div class="qrow"><span class="k">No. of Tents</span><span class="v">${l.qty}</span></div>
+         <div class="qrow"><span class="k">No. of Guests</span><span class="v">${l.displayGuests} Pax</span></div>
+         <div class="qrow"><span class="k">Tent Rate</span><span class="v">${fmtINR(l.tentRateAmount)}</span></div>`;
+      if(l.mattressQty > 0){
+        rows += `<div class="qrow"><span class="k">Extra Mattress (${l.mattressQty})</span><span class="v">${fmtINR(l.mattressAmount)}</span></div>`;
+      }
+      return rows;
+    }).join('<hr class="divider" style="margin:12px 0;">');
+
+    const discountHolder = $("rDiscountRows");
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      let rows =
+        `<div class="price-row"><span>Tent Rate</span><span class="amt">${fmtINR(r.grossTentRate)}</span></div>
+         <div class="price-row"><span>${label} (${r.adjustmentPercent}%)</span><span class="amt">-${fmtINR(r.adjustmentAmount)}</span></div>
+         <div class="price-row"><span>Tent Rate After ${label}</span><span class="amt">${fmtINR(r.netTentRate)}</span></div>`;
+      if(r.mattressTotal > 0){
+        rows += `<div class="price-row"><span>Extra Mattress</span><span class="amt">${fmtINR(r.mattressTotal)}</span></div>`;
+      }
+      rows += `<div class="price-row"><span>${q.evoke ? "Rann Utsav Subtotal" : "Taxable Amount"}</span><span class="amt">${fmtINR(q.evoke ? r.subtotal : q.taxableAmount)}</span></div>`;
+      discountHolder.innerHTML = rows;
+    } else if(q.evoke){
+      // No Rann Discount/TAC selected, but Evoke is present — still show
+      // the Rann subtotal so the two sections read clearly before the combined total.
+      discountHolder.innerHTML = `<div class="price-row"><span>Rann Utsav Subtotal</span><span class="amt">${fmtINR(r.subtotal)}</span></div>`;
+    } else {
+      discountHolder.innerHTML = "";
+    }
+  } else {
+    $("qcPackage").textContent = "Package: Evoke Dholavira";
+  }
+
+  const evokeHolder = $("rEvokeSection");
+  if(q.evoke){
+    const e = q.evoke;
+    let rows = `<p class="qlabel">Evoke Dholavira</p>`;
+    if(!q.rann){
+      // Evoke-only: the Rann section (which normally shows dates) is
+      // hidden, so show the Evoke stay dates here instead.
+      rows += `
+        <div class="qrow"><span class="k">Check-in Date</span><span class="v">${fmtDate(e.checkin)}</span></div>
+        <div class="qrow"><span class="k">Check-out Date</span><span class="v">${fmtDate(e.checkout)}</span></div>`;
+    }
+    rows += `
+      <div class="qrow"><span class="k">Accommodation</span><span class="v">${e.accommodation}</span></div>
+      <div class="qrow"><span class="k">Stay Duration</span><span class="v">${e.nights} Night${e.nights > 1 ? "s" : ""}</span></div>
+      <div class="qrow"><span class="k">No. of Rooms</span><span class="v">${e.rooms}</span></div>
+      <div class="qrow"><span class="k">Occupancy</span><span class="v">${e.singleOcc ? "Single" : "Double"} (${e.totalGuests} Pax)</span></div>`;
+
+    // Evoke's own, independent Discount/TAC — applies only to
+    // accommodation, never to Extra Mattress. Omitted entirely at 0%.
+    if(e.adjustmentPercent > 0){
+      const eLabel = e.adjustmentType === "tac" ? "TAC" : "Discount";
+      rows += `
+        <div class="qrow"><span class="k">Evoke Accommodation</span><span class="v">${fmtINR(e.grossAccommodation)}</span></div>
+        <div class="qrow"><span class="k">${eLabel} (${e.adjustmentPercent}%)</span><span class="v">-${fmtINR(e.adjustmentAmount)}</span></div>
+        <div class="qrow"><span class="k">Accommodation After ${eLabel}</span><span class="v">${fmtINR(e.netAccommodation)}</span></div>`;
+    } else {
+      rows += `<div class="qrow"><span class="k">Accommodation Amount</span><span class="v">${fmtINR(e.grossAccommodation)}</span></div>`;
+    }
+    if(e.mattressQty > 0){
+      rows += `<div class="qrow"><span class="k">Extra Mattress (${e.mattressQty})</span><span class="v">${fmtINR(e.mattressTotal)}</span></div>`;
+    }
+    rows += `<div class="qrow"><span class="k">Evoke Dholavira Subtotal</span><span class="v">${fmtINR(e.subtotal)}</span></div>`;
+    evokeHolder.innerHTML = `<div class="qsection">${rows}</div>`;
+  } else {
+    evokeHolder.innerHTML = "";
+  }
+
+  const adjustHolder = $("rAdjustmentRows");
+  if(q.rann && q.evoke){
+    // Combined Taxable Amount only needs to appear once, at the very
+    // end, once both Rann and Evoke totals are known.
+    adjustHolder.innerHTML = `<div class="price-row"><span>Taxable Amount</span><span class="amt">${fmtINR(q.taxableAmount)}</span></div>`;
+  } else {
+    // Single-section modes already end with their own running total
+    // (Rann's own Taxable Amount row, or Evoke's own Subtotal row) —
+    // nothing further to add here, exactly as before this feature.
+    adjustHolder.innerHTML = "";
+  }
+
+  $("rGST").textContent = fmtINR(q.gst);
+  $("rNet").textContent = fmtINR(q.net);
+}
+
+/* ================================================================
+   COPY FOR WHATSAPP (text format unchanged)
+   ================================================================ */
+function copyForWhatsApp(){
+  if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
+  const q = lastQuote;
+  let text;
+
+  if(q.rann){
+    // Rann-only or combined — the existing Rann quotation format is
+    // preserved exactly; a concise Evoke summary is appended only
+    // when the extension is present.
+    const r = q.rann;
+    const catBlocks = r.categoryLines.map(l => {
+      const lines = [
+        `Tent Category - ${l.category}`,
+        `No. of Tents - ${l.qty}`,
+        `No. of Guests - ${l.displayGuests} Pax`,
+        `Tent Rate - ${fmtINRPlain(l.tentRateAmount)}`,
+      ];
+      if(l.mattressQty > 0){
+        lines.push(`Extra Mattress (${l.mattressQty}) - ${fmtINRPlain(l.mattressAmount)}`);
+      }
+      return lines.join("\n\n");
+    }).join("\n\n\n");
+
+    // Rann Discount/TAC block — omitted entirely at 0%, per spec.
+    let adjustmentBlock = "";
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      adjustmentBlock =
+`Tent Rate: ${fmtINRPlain(r.grossTentRate)}
+
+${label} (${r.adjustmentPercent}%): -${fmtINRPlain(r.adjustmentAmount)}
+
+Tent Rate After ${label}: ${fmtINRPlain(r.netTentRate)}
+
+`;
+    }
+
+    // Concise Evoke Dholavira summary (combined mode only) — never the
+    // full detailed itinerary, and shows Evoke's own subtotal alongside
+    // the Rann subtotal per the "combined" WhatsApp spec.
+    let evokeBlock = "";
+    if(q.evoke){
+      const e = q.evoke;
+      evokeBlock =
+`Rann Utsav Subtotal: ${fmtINRPlain(r.subtotal)}
+
+Evoke Dholavira Extension: ${e.nights} Night${e.nights > 1 ? "s" : ""} / ${e.nights + 1} Days
+
+${e.accommodation}
+${e.rooms} Room${e.rooms > 1 ? "s" : ""}
+
+Evoke Dholavira Subtotal: ${fmtINRPlain(e.subtotal)}
+
+`;
+    }
+
+    text =
+`Rann Utsav Tent City
+
+Package ${r.nights} Night${r.nights > 1 ? "s" : ""}
+
+Check in Date - ${fmtDate(r.checkin)}
+
+Check out Date - ${fmtDate(r.checkout)}
+
+${catBlocks}
+
+${adjustmentBlock}${evokeBlock}GST 18% - ${fmtINRPlain(q.gst)}
+
+Net Payable - ${fmtINRPlain(q.net)}
+
+Thank you for choosing Rann Utsav Tent City.
+We look forward to welcoming you for a memorable experience.`;
+
+  } else if(q.evoke){
+    // Evoke Dholavira only — no Rann information at all.
+    const e = q.evoke;
+    const label = e.adjustmentType === "tac" ? "TAC" : "Discount";
+    let adjustmentLines = "";
+    if(e.adjustmentPercent > 0){
+      adjustmentLines =
+`${label} (${e.adjustmentPercent}%):
+-${fmtINRPlain(e.adjustmentAmount)}
+
+`;
+    }
+    let mattressLines = "";
+    if(e.mattressQty > 0){
+      mattressLines =
+`Extra Mattress:
+${fmtINRPlain(e.mattressTotal)}
+
+`;
+    }
+
+    text =
+`EVOKE DHOLAVIRA
+
+Stay:
+${e.nights} Night${e.nights > 1 ? "s" : ""} / ${e.nights + 1} Days
+
+Accommodation:
+${e.accommodation}
+
+Rooms:
+${e.rooms}
+
+Gross Accommodation:
+${fmtINRPlain(e.grossAccommodation)}
+
+${adjustmentLines}${mattressLines}GST:
+${fmtINRPlain(q.gst)}
+
+Net Payable:
+${fmtINRPlain(q.net)}
+
+Thank you for choosing Evoke Dholavira.
+We look forward to welcoming you for a memorable experience.`;
+  } else {
+    setStatus("Generate a quotation first.", "warn");
+    return;
+  }
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(() => setStatus("Quotation copied — ready to paste into WhatsApp.", "ok"))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if(ok){
+      setStatus("Quotation copied — ready to paste into WhatsApp.", "ok");
+    } else {
+      throw new Error("copy failed");
+    }
+  } catch(err){
+    setStatus("Could not copy automatically — please select and copy the text manually.", "warn");
+  }
+}
+
+/* ================================================================
+   PDF — direct vector download (jsPDF, no html2canvas)
+   Builds the quotation as native PDF text/vector drawing commands —
+   not a screenshot — so it renders identically and crisply on
+   Android Chrome, Samsung Internet, iOS Safari, and desktop, at a
+   fixed A4 portrait size, with no cropping and no blurry/missing
+   glyphs. The file downloads immediately; no print dialog involved.
+   Amounts are written as "INR" rather than the ₹ glyph inside the
+   PDF only, because jsPDF's built-in fonts don't include the Rupee
+   sign — the ₹ symbol is kept everywhere else (on-screen, WhatsApp
+   copy).
+   ================================================================ */
+const PDF_COLORS = {
+  maroon:   [196, 20, 95],
+  maroon2:  [143, 14, 70],
+  gold:     [232, 162, 59],
+  goldSoft: [243, 200, 120],
+  ink:      [43, 33, 28],
+  inkSoft:  [90, 76, 64],
+  line:     [231, 216, 194],
+  white:    [255, 255, 255],
+};
+
+const fmtINRForPdf = fmtINRPlain;
+
+/* Builds the (unchanged) quotation pages onto `doc`, starting at the
+   current page/position. Kept exactly as before. */
+function buildQuotePdf(doc, q){
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 56;
+  const contentW = pageW - margin * 2;
+  const bottomLimit = pageH - 60;
+  let y;
+
+  const setColor = (fn, rgb) => doc[fn](rgb[0], rgb[1], rgb[2]);
+
+  function ensureSpace(need){
+    if(y + need > bottomLimit){
+      doc.addPage();
+      y = 60;
+    }
+  }
+
+  function divider(){
+    ensureSpace(20);
+    setColor("setDrawColor", PDF_COLORS.line);
+    doc.setLineWidth(0.75);
+    doc.line(margin, y, pageW - margin, y);
+    y += 20;
+  }
+
+  function labelValueRow(label, value, bold){
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    setColor("setTextColor", PDF_COLORS.inkSoft);
+    const valueLines = doc.splitTextToSize(String(value), contentW * 0.6);
+    ensureSpace(16 * valueLines.length + 7);
+    doc.text(label.toUpperCase(), margin, y);
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(11.5);
+    setColor("setTextColor", PDF_COLORS.ink);
+    doc.text(valueLines, pageW - margin, y, { align: "right" });
+    y += 16 * valueLines.length + 7;
+  }
+
+  function sectionHeading(text){
+    ensureSpace(24);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12.5);
+    setColor("setTextColor", PDF_COLORS.maroon);
+    doc.text(text, margin, y);
+    y += 20;
+  }
+
+  // ---- Header band ----
+  // Deep maroon band with the property name and package. Toll-free
+  // number appears once, in the footer, to avoid repeating it. No
+  // GSTIN is shown, per the requested layout. Header text adapts to
+  // booking type: Rann branding for Rann-only/combined, Evoke branding
+  // for Evoke-only.
+  const headerH = 96;
+  setColor("setFillColor", PDF_COLORS.maroon2);
+  doc.rect(0, 0, pageW, headerH, "F");
+  setColor("setFillColor", PDF_COLORS.gold);
+  doc.rect(0, headerH, pageW, 3, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  setColor("setTextColor", PDF_COLORS.white);
+  let headerTitle, headerPackage;
+  if(q.rann){
+    headerTitle = "RANN UTSAV TENT CITY";
+    headerPackage = `Package: ${q.rann.nights} Night${q.rann.nights > 1 ? "s" : ""}` + (q.evoke ? " + Evoke Dholavira" : "");
+  } else {
+    headerTitle = "EVOKE DHOLAVIRA";
+    headerPackage = `Package: ${q.evoke.nights} Night${q.evoke.nights > 1 ? "s" : ""}`;
+  }
+  doc.text(headerTitle, pageW / 2, 46, { align: "center" });
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(12);
+  setColor("setTextColor", PDF_COLORS.goldSoft);
+  doc.text(headerPackage, pageW / 2, 70, { align: "center" });
+
+  y = headerH + 3 + 34;
+
+  // ---- Guest name (always shown) ----
+  labelValueRow("Guest Name", q.name, true);
+  divider();
+
+  // ---- Rann Utsav section (only when this booking includes it) ----
+  if(q.rann){
+    const r = q.rann;
+    labelValueRow("Check-in Date", fmtDate(r.checkin));
+    labelValueRow("Check-out Date", fmtDate(r.checkout));
+    divider();
+
+    r.categoryLines.forEach((l, i) => {
+      ensureSpace(110);
+      labelValueRow("Tent Category", l.category, true);
+      labelValueRow("No. of Tents", String(l.qty));
+      labelValueRow("No. of Guests", `${l.displayGuests} Pax`);
+      labelValueRow("Tent Rate", fmtINRForPdf(l.tentRateAmount), true);
+      if(l.mattressQty > 0){
+        labelValueRow(`Extra Mattress (${l.mattressQty})`, fmtINRForPdf(l.mattressAmount), true);
+      }
+      if(i < r.categoryLines.length - 1) divider();
+    });
+    divider();
+
+    // Rann Discount / TAC (only shown when a percentage was selected —
+    // keeps the PDF looking exactly as before at 0%). When Evoke
+    // Dholavira is also present, this block ends with "Rann Utsav
+    // Subtotal" rather than "Taxable Amount" — the combined taxable
+    // amount is only shown once, after the Evoke section below.
+    if(r.adjustmentPercent > 0){
+      const label = r.adjustmentType === "tac" ? "TAC" : "Discount";
+      labelValueRow("Tent Rate", fmtINRForPdf(r.grossTentRate));
+      labelValueRow(`${label} (${r.adjustmentPercent}%)`, `-${fmtINRForPdf(r.adjustmentAmount)}`);
+      labelValueRow(`Tent Rate After ${label}`, fmtINRForPdf(r.netTentRate), true);
+      if(r.mattressTotal > 0){
+        labelValueRow("Extra Mattress", fmtINRForPdf(r.mattressTotal));
+      }
+      labelValueRow(q.evoke ? "Rann Utsav Subtotal" : "Taxable Amount", fmtINRForPdf(q.evoke ? r.subtotal : q.taxableAmount), true);
+      divider();
+    } else if(q.evoke){
+      // No Rann Discount/TAC selected, but Evoke is present — still
+      // show the Rann subtotal so the two sections read clearly.
+      labelValueRow("Rann Utsav Subtotal", fmtINRForPdf(r.subtotal), true);
+      divider();
+    }
+  }
+
+  // ---- Evoke Dholavira section (only when this booking includes it) ----
+  if(q.evoke){
+    const e = q.evoke;
+    ensureSpace(120);
+    if(q.rann) sectionHeading("EVOKE DHOLAVIRA");
+    if(!q.rann){
+      // Evoke-only: no Rann section above provided the stay dates —
+      // show them here instead.
+      labelValueRow("Check-in Date", fmtDate(e.checkin));
+      labelValueRow("Check-out Date", fmtDate(e.checkout));
+    }
+    labelValueRow("Accommodation", e.accommodation, true);
+    labelValueRow("Stay Duration", `${e.nights} Night${e.nights > 1 ? "s" : ""}`);
+    labelValueRow("No. of Rooms", String(e.rooms));
+    labelValueRow("Occupancy", `${e.singleOcc ? "Single" : "Double"} (${e.totalGuests} Pax)`);
+    if(q.rann){
+      labelValueRow("Check-in Date", fmtDate(e.checkin));
+      labelValueRow("Check-out Date", fmtDate(e.checkout));
+    }
+
+    // Evoke's own, independent Discount/TAC — applies only to
+    // accommodation, never to Extra Mattress. Omitted entirely at 0%.
+    if(e.adjustmentPercent > 0){
+      const eLabel = e.adjustmentType === "tac" ? "TAC" : "Discount";
+      labelValueRow("Evoke Accommodation", fmtINRForPdf(e.grossAccommodation));
+      labelValueRow(`${eLabel} (${e.adjustmentPercent}%)`, `-${fmtINRForPdf(e.adjustmentAmount)}`);
+      labelValueRow(`Accommodation After ${eLabel}`, fmtINRForPdf(e.netAccommodation), true);
+    } else {
+      labelValueRow("Accommodation Amount", fmtINRForPdf(e.grossAccommodation), true);
+    }
+    if(e.mattressQty > 0){
+      labelValueRow(`Extra Mattress (${e.mattressQty})`, fmtINRForPdf(e.mattressTotal), true);
+    }
+    labelValueRow("Evoke Dholavira Subtotal", fmtINRForPdf(e.subtotal), true);
+    divider();
+
+    if(q.rann){
+      // Combined booking — show the combined taxable amount once,
+      // after both sections, before GST.
+      labelValueRow("Taxable Amount", fmtINRForPdf(q.taxableAmount), true);
+      divider();
+    }
+  }
+
+  // ---- Price summary ----
+  ensureSpace(70);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  setColor("setTextColor", PDF_COLORS.ink);
+  doc.text("GST (18%)", margin, y);
+  doc.setFont("helvetica", "bold");
+  doc.text(fmtINRForPdf(q.gst), pageW - margin, y, { align: "right" });
+  y += 22;
+
+  setColor("setDrawColor", PDF_COLORS.line);
+  doc.setLineWidth(0.75);
+  doc.line(margin, y, pageW - margin, y);
+  y += 22;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  setColor("setTextColor", PDF_COLORS.maroon);
+  doc.text("Net Payable", margin, y);
+  doc.text(fmtINRForPdf(q.net), pageW - margin, y, { align: "right" });
+  y += 40;
+
+  // ---- Footer ----
+  divider();
+  ensureSpace(70);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  setColor("setTextColor", PDF_COLORS.maroon);
+  doc.text(headerTitle, pageW / 2, y, { align: "center" });
+  y += 17;
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(10.5);
+  setColor("setTextColor", PDF_COLORS.inkSoft);
+  const footerLines = doc.splitTextToSize(
+    `Thank you for choosing ${q.rann ? "Rann Utsav Tent City" : "Evoke Dholavira"}. We look forward to welcoming you for a memorable experience.`,
+    contentW
+  );
+  doc.text(footerLines, pageW / 2, y, { align: "center" });
+  y += 15 * footerLines.length + 8;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  setColor("setTextColor", PDF_COLORS.gold);
+  doc.text("Toll Free: 1800 233 9008", pageW / 2, y, { align: "center" });
+}
+
+/* ================================================================
+   PDF — ITINERARY PAGES (native jsPDF drawing only: text, lines,
+   rects — no screenshots, no html2canvas, no external PDF embed).
+   Appended after the quotation pages when includeItinerary is true.
+   Reuses the same PDF_COLORS palette and page size as the quotation.
+   ================================================================ */
+function addItineraryPages(doc, q){
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 56;
+  const contentW = pageW - margin * 2;
+  const bottomLimit = pageH - 56;
+  const setColor = (fn, rgb) => doc[fn](rgb[0], rgb[1], rgb[2]);
+
+  let y;
+
+  // Smaller header used on continuation pages (any itinerary page
+  // after the first) so the full quotation-style banner isn't repeated.
+  function drawContinuationHeader(){
+    setColor("setFillColor", PDF_COLORS.maroon2);
+    doc.rect(0, 0, pageW, 34, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    setColor("setTextColor", PDF_COLORS.white);
+    doc.text("ITINERARY (CONTD.)", pageW / 2, 22, { align: "center" });
+    y = 34 + 26;
+  }
+
+  function ensureItinerarySpace(requiredHeight){
+    if(y + requiredHeight > bottomLimit){
+      doc.addPage();
+      drawContinuationHeader();
+    }
+  }
+
+  // Draws one day's card (heading + date + timed items + note). Shared
+  // by both the Rann Utsav days and the Evoke Dholavira days below —
+  // the drawing logic itself is never duplicated between the two.
+  function drawDay(day, dateLabel, isLastInSection){
+    ensureItinerarySpace(56);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    setColor("setTextColor", PDF_COLORS.maroon);
+    doc.text(day.title.toUpperCase(), margin, y);
+    if(dateLabel){
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      setColor("setTextColor", PDF_COLORS.gold);
+      doc.text(dateLabel, pageW - margin, y, { align: "right" });
+    }
+    y += 10;
+    setColor("setDrawColor", PDF_COLORS.line);
+    doc.setLineWidth(0.75);
+    doc.line(margin, y, pageW - margin, y);
+    y += 18;
+
+    day.items.forEach(item => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      const timeLines = doc.splitTextToSize(item.time, 92);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      const activityLines = doc.splitTextToSize(item.activity, contentW - 100);
+      const rowHeight = Math.max(timeLines.length, activityLines.length) * 14 + 6;
+      ensureItinerarySpace(rowHeight);
+
+      doc.setFont("helvetica", "bold");
+      setColor("setTextColor", PDF_COLORS.maroon2);
+      doc.text(timeLines, margin, y);
+
+      doc.setFont("helvetica", "normal");
+      setColor("setTextColor", PDF_COLORS.ink);
+      doc.text(activityLines, margin + 100, y);
+
+      y += rowHeight;
+    });
+
+    if(day.note){
+      const noteLines = doc.splitTextToSize(`Important Note: ${day.note}`, contentW);
+      ensureItinerarySpace(14 * noteLines.length + 10);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9.5);
+      setColor("setTextColor", PDF_COLORS.maroon);
+      doc.text(noteLines, margin, y);
+      y += 14 * noteLines.length + 6;
+    }
+
+    if(!isLastInSection){
+      ensureItinerarySpace(20);
+      setColor("setDrawColor", PDF_COLORS.line);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageW - margin, y);
+      y += 20;
+    }
+  }
+
+  // ---- Rann Utsav itinerary pages (only when this booking includes
+  // Rann — Evoke-only bookings show only the Evoke itinerary below) ----
+  if(q.rann){
+    const r = q.rann;
+    const rannItinerary = ITINERARIES[String(r.nights)];
+    if(rannItinerary){
+      doc.addPage();
+      const headerH = 84;
+      setColor("setFillColor", PDF_COLORS.maroon2);
+      doc.rect(0, 0, pageW, headerH, "F");
+      setColor("setFillColor", PDF_COLORS.gold);
+      doc.rect(0, headerH, pageW, 3, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(19);
+      setColor("setTextColor", PDF_COLORS.white);
+      doc.text("RANN UTSAV ITINERARY", pageW / 2, 40, { align: "center" });
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(11.5);
+      setColor("setTextColor", PDF_COLORS.goldSoft);
+      doc.text(rannItinerary.label, pageW / 2, 62, { align: "center" });
+
+      y = headerH + 3 + 30;
+
+      const rannDays = getRannDays(r.nights, !!q.evoke);
+      rannDays.forEach((day, dayIndex) => {
+        const dateLabel = fmtDateLong(addDaysLocal(r.checkin, dayIndex));
+        drawDay(day, dateLabel, dayIndex === rannDays.length - 1 && !q.evoke);
+      });
+    }
+  }
+
+  // ---- Evoke Dholavira itinerary pages (Rann + Evoke, or Evoke only)
+  // — same document, native jsPDF drawing, no separate PDF ----
+  if(q.evoke){
+    const evokeItinerary = EVOKE_ITINERARIES[String(q.evoke.nights)];
+    if(evokeItinerary){
+      if(q.rann){
+        // Continuing straight on from the Rann pages above.
+        ensureItinerarySpace(70);
+        y += 6;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        setColor("setTextColor", PDF_COLORS.maroon);
+        doc.text("EVOKE DHOLAVIRA — EXTENDED STAY", margin, y);
+        y += 6;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10.5);
+        setColor("setTextColor", PDF_COLORS.inkSoft);
+        doc.text(evokeItinerary.label, margin, y + 14);
+        y += 30;
+      } else {
+        // Evoke-only booking: its own full-width header page, matching
+        // the Rann itinerary's page style (no Rann pages precede it).
+        doc.addPage();
+        const headerH = 84;
+        setColor("setFillColor", PDF_COLORS.maroon2);
+        doc.rect(0, 0, pageW, headerH, "F");
+        setColor("setFillColor", PDF_COLORS.gold);
+        doc.rect(0, headerH, pageW, 3, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(19);
+        setColor("setTextColor", PDF_COLORS.white);
+        doc.text("EVOKE DHOLAVIRA ITINERARY", pageW / 2, 40, { align: "center" });
+
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(11.5);
+        setColor("setTextColor", PDF_COLORS.goldSoft);
+        doc.text(evokeItinerary.label, pageW / 2, 62, { align: "center" });
+
+        y = headerH + 3 + 30;
+      }
+
+      // Deduplicate the archaeological sightseeing only when this is a
+      // combined booking AND the Rann stay was 3 Nights/4 Days (which
+      // already covers it) — an Evoke-only booking always gets the
+      // full Day 1, since there's no Rann Day 3 to have covered it.
+      const dedup = !!(q.rann && q.rann.nights === 3);
+      const evokeDays = getEvokeDays(q.evoke.nights, dedup);
+      evokeDays.forEach((day, dayIndex) => {
+        const dateLabel = fmtDateLong(addDaysLocal(q.evoke.checkin, dayIndex));
+        drawDay(day, dateLabel, dayIndex === evokeDays.length - 1);
+      });
+    }
+  }
+}
+
+/* ================================================================
+   PDF DOWNLOAD — desktop browsers vs. the Android APK build
+   Desktop Chrome/Edge/Firefox: jsPDF's own doc.save() works fine and
+   is left untouched below.
+   Android APK (WebView): the app registers a JS interface named
+   AndroidDownloader with a saveBase64File(fileName, base64Data,
+   mimeType) method (see AndroidDownloadBridge.kt) that writes the PDF
+   straight into Downloads/ via MediaStore. When that object is
+   present we hand the PDF to it as base64 instead of calling
+   doc.save(), which a bare WebView has no download manager for.
+   ================================================================ */
+function downloadPDF(){
+  if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    setStatus("The PDF library could not be loaded — check your internet connection and try again.", "warn");
+    return;
+  }
+  const btn = $("pdfBtn");
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Preparing PDF…";
+  setStatus("Preparing your PDF…", "ok");
+
+  window.setTimeout(() => {
+    try{
+      const { doc, fname } = createQuotePdfDoc();
+      saveQuotePdf(doc, fname);
+    } catch(err){
+      setStatus("Could not generate the PDF — please try again.", "warn");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }, 30);
+}
+
+/* Builds the jsPDF document for the current quotation — the single
+   place that calls buildQuotePdf() (and, when requested,
+   addItineraryPages()) — reused by both Download and Share so the
+   PDF generation logic itself is never duplicated. */
+function createQuotePdfDoc(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+  buildQuotePdf(doc, lastQuote);
+  if(lastQuote.includeItinerary){
+    addItineraryPages(doc, lastQuote);
+  }
+  const fname = "RannUtsav_Quote_" + (lastQuote.name || "Guest").trim().replace(/\s+/g, "_") + ".pdf";
+  return { doc, fname };
+}
+
+/* Saves an already-built PDF doc — the same Android-bridge / desktop
+   doc.save() logic Download PDF has always used, factored out so
+   Share PDF's fallback path can call it too instead of repeating it. */
+function saveQuotePdf(doc, fname){
+  if(window.AndroidDownloader && typeof window.AndroidDownloader.saveBase64File === "function"){
+    // Running inside the Android APK's WebView with the native
+    // bridge registered — hand it the raw base64 payload.
+    const base64 = doc.output("datauristring").split(",")[1];
+    window.AndroidDownloader.saveBase64File(fname, base64, "application/pdf");
+    setStatus("PDF saved.", "ok");
+  } else {
+    // Desktop browser (or a WebView without the bridge) — unchanged.
+    doc.save(fname);
+    setStatus("PDF downloaded.", "ok");
+  }
+}
+
+/* ================================================================
+   SHARE PDF — same PDF (via createQuotePdfDoc(), no duplicated
+   generation logic), handed to the Web Share API with a file
+   attached when the browser supports it, so the person can pick
+   WhatsApp, Gmail, Telegram, Drive, Bluetooth, Nearby Share, or any
+   other installed app from the native share sheet. Falls back to the
+   exact same save path as Download PDF when navigator.share() (or
+   file sharing specifically) isn't available.
+   ================================================================ */
+function sharePDF(){
+  if(!lastQuote){ setStatus("Generate a quotation first.", "warn"); return; }
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    setStatus("The PDF library could not be loaded — check your internet connection and try again.", "warn");
+    return;
+  }
+  const btn = $("shareBtn");
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Preparing PDF…";
+  setStatus("Preparing your PDF…", "ok");
+
+  window.setTimeout(async () => {
+    try{
+      const { doc, fname } = createQuotePdfDoc();
+      const blob = doc.output("blob");
+      const file = new File([blob], fname, { type: "application/pdf" });
+
+      const canShareFiles =
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] });
+
+      if(canShareFiles){
+        try{
+          await navigator.share({
+            files: [file],
+            title: "Rann Utsav Tent City — Quotation",
+            text: "Rann Utsav Tent City quotation"
+          });
+          setStatus("Quotation shared.", "ok");
+        } catch(shareErr){
+          // AbortError just means the person closed the share sheet
+          // themselves — not a failure, so don't fall back for that.
+          if(shareErr && shareErr.name !== "AbortError"){
+            saveQuotePdf(doc, fname);
+          }
+        }
+      } else {
+        // Web Share API (with files) isn't available here — fall back
+        // to the exact same save path Download PDF uses.
+        saveQuotePdf(doc, fname);
+      }
+    } catch(err){
+      setStatus("Could not generate the PDF — please try again.", "warn");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }, 30);
+}
+
+/* ================================================================
+   INIT — event wiring + default demo state
+   ================================================================ */
+function init(){
+  $("addLineBtn").addEventListener("click", () => { addLine(); maybeLiveUpdate(); });
+  $("copyBtn").addEventListener("click", copyForWhatsApp);
+  $("pdfBtn").addEventListener("click", downloadPDF);
+  $("shareBtn").addEventListener("click", sharePDF);
+
+  $("quoteForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    generateQuote();
+  });
+
+  ["checkinDate","nights","peakOverride"].forEach(id=>{
+    $(id).addEventListener("change", updateCheckoutAndBanner);
+  });
+
+  // Itinerary toggle + the two inputs that change what it shows.
+  $("includeItinerary").addEventListener("change", (e) => {
+    includeItinerary = e.target.checked;
+    e.target.setAttribute("aria-checked", String(includeItinerary));
+    $("includeItineraryState").textContent = includeItinerary ? "Yes" : "No";
+    renderItineraryPreview();
+    maybeLiveUpdate();
+  });
+  $("checkinDate").addEventListener("change", renderItineraryPreview);
+  $("nights").addEventListener("change", renderItineraryPreview);
+
+  // Booking Type selector governs which sections apply — replaces the
+  // old standalone "Include Evoke Dholavira Stay?" toggle entirely.
+  $("evokeRooms").innerHTML = numberOptionsRange(1, 10, 1);
+  $("bookingType").addEventListener("change", applyBookingType);
+  ["evokeNights","evokeAccommodation","evokeRooms","evokeSingleOcc","evokeMattress","evokeOnlyCheckin"].forEach(id=>{
+    $(id).addEventListener("change", () => { updateEvokeCheckin(); renderItineraryPreview(); });
+  });
+  $("evokeMattress").addEventListener("input", updateEvokeCheckin);
+
+  // Live-refresh: once a quote exists, any change anywhere in the form
+  // (guest name, package, dates, tent categories/qty, guest counts,
+  // mattress, single occupancy — including fields inside dynamically
+  // added tent-category lines) re-runs the quote silently. Delegated
+  // on the form so it needs no per-field wiring as new lines are added.
+  $("quoteForm").addEventListener("input", maybeLiveUpdate);
+  $("quoteForm").addEventListener("change", maybeLiveUpdate);
+
+  // Seed the form with a representative default, matching the
+  // original tool's starting state — one tent category, one tent.
+  const d = new Date("2026-11-15");
+  $("checkinDate").value = d.toISOString().slice(0,10);
+  addLine("Non-AC Swiss Cottage");
+  bookingType = $("bookingType").value; // "rann" — matches the HTML default
+  includeEvoke = bookingType !== "rann";
+  updateCheckoutAndBanner();
+  updateEvokeCheckin();
+  renderItineraryPreview();
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+</script>
 </body>
 </html>
