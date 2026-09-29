@@ -489,6 +489,10 @@
 
           <div id="linesContainer"></div>
           <button class="btn btn-ghost" id="addLineBtn" type="button">+ Add Another Tent Category</button>
+          <div class="no-print" style="margin-top:14px">
+            <button class="btn btn-outline" id="checkAvailabilityBtn" type="button" disabled>Check Availability</button>
+            <p class="status" id="availabilityStatus" role="status" aria-live="polite"></p>
+          </div>
 
           <hr class="divider">
 
@@ -615,6 +619,11 @@
 
         <button class="btn btn-primary" id="generateBtn" type="submit">Generate Quotation</button>
       </form>
+      <div class="action-row no-print">
+        <button class="btn btn-outline" id="saveInquiryBtn" type="button">Save Inquiry</button>
+        <a class="btn btn-outline" href="leads.html">Leads</a>
+      </div>
+      <p id="inquiryNotice" class="status" role="status"></p>
     </section>
 
     <!-- ============================================================
@@ -2776,5 +2785,22 @@ if(document.readyState === "loading"){
   init();
 }
 </script>
+<script src="availability.js" defer></script>
+<dialog id="inquiryDialog" class="panel" style="width:min(440px,95vw);max-height:90vh;overflow:auto">
+  <h2>Save Inquiry</h2>
+  <form id="inquiryForm">
+    <div class="field"><label for="inquiryName">Customer Name</label><input id="inquiryName" maxlength="120" required></div>
+    <div class="field"><label for="inquiryMobile">Mobile Number (with country code)</label><input id="inquiryMobile" type="tel" placeholder="919876543210" required></div>
+    <div class="field"><label for="inquirySource">Lead Source</label><input id="inquirySource" maxlength="80" placeholder="Call / WhatsApp / Referral" required></div>
+    <div class="field"><label for="inquiryAmount">Quote Amount (INR)</label><input id="inquiryAmount" readonly></div>
+    <div class="field"><label for="inquiryStatus">Status</label><select id="inquiryStatus"><option>New</option><option>Quote Sent</option><option>Follow-up</option><option>Booked</option><option>Lost</option></select></div>
+    <div class="field"><label for="inquiryFollowup">Next Follow-up</label><input id="inquiryFollowup" type="date"></div>
+    <button id="inquirySubmit" class="btn btn-primary" type="submit">Save Inquiry</button>
+    <button id="inquiryCancel" class="btn btn-outline" type="button">Cancel</button>
+    <p id="inquiryMessage" class="status" role="status"></p>
+  </form>
+</dialog>
+<p id="employeeAccount"></p><script src="employee.js" defer></script>
+<script src="inquiry.js" defer></script>
 </body>
 </html>
