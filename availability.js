@@ -2,7 +2,7 @@
 const AVAILABILITY_API_URL =
     'https://kelly-revenues-sections-template.trycloudflare.com/api/availability';
 const AVAILABILITY_API_KEY =
-  '87e393ee0a1506df4f7e7d9415ccb5f0145410ea13051337f1e72ee05197683a's
+  '87e393ee0a1506df4f7e7d9415ccb5f0145410ea13051337f1e72ee05197683a';
 
 /* Independent of quotation calculations, PDF and WhatsApp output. */
 (() => {
