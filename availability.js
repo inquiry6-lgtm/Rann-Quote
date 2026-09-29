@@ -1,8 +1,8 @@
 // Temporary internal GitHub Pages test: this key is visible to page visitors.
 const AVAILABILITY_API_URL =
-    'https://drainage-binding-administrator-surgery.trycloudflare.com/api/availability';
+    'https://kelly-revenues-sections-template.trycloudflare.com/api/availability';
 const AVAILABILITY_API_KEY =
-  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnZGhyaWd6cHVucHhtdXFpdmFpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDEzNjk4NywiZXhwIjoyMTA1NzEyOTg3fQ.gnQsHiC9Rl0J5DFiFIVsfQ1caqJqSa02gVKnNm5vKCM
+  87e393ee0a1506df4f7e7d9415ccb5f0145410ea13051337f1e72ee05197683a
 
 /* Independent of quotation calculations, PDF and WhatsApp output. */
 (() => {
