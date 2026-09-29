@@ -1,8 +1,8 @@
 // Temporary internal GitHub Pages test: this key is visible to page visitors.
 const AVAILABILITY_API_URL =
-    'https://kelly-revenues-sections-template.trycloudflare.com/api/availability';
+     'https://rann-availability-backend.onrender.com/api/availability';
 const AVAILABILITY_API_KEY =
-  '87e393ee0a1506df4f7e7d9415ccb5f0145410ea13051337f1e72ee05197683a';
+  '99c57175f4601faf1a643b4d3898ac3531be1ee3709ec0879aa4be66cab5a186';
 
 /* Independent of quotation calculations, PDF and WhatsApp output. */
 (() => {
@@ -49,7 +49,7 @@ const AVAILABILITY_API_KEY =
     if (!data) return reset();
     const current = ++version;
     active = new AbortController();
-    const timer = setTimeout(() => active?.abort(), 22000);
+    const timer = setTimeout(() => active?.abort(), 150000);
     clearTimeout(expiry);
     button.disabled = true;
     button.textContent = 'Checking…';
